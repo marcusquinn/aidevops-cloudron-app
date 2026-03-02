@@ -37,9 +37,10 @@ if [[ "$FIRST_RUN" == "true" ]]; then
 		cat /app/data/.ssh/id_ed25519.pub
 	fi
 
-	# Initialize default config
+	# Initialize default config with auto-generated auth token
 	if [[ ! -f /app/data/config/worker.json ]]; then
-		cat >/app/data/config/worker.json <<'EOF'
+		AUTH_TOKEN=$(openssl rand -hex 32)
+		cat >/app/data/config/worker.json <<EOF
 {
   "worker": {
     "max_concurrent": 1,
@@ -48,7 +49,7 @@ if [[ "$FIRST_RUN" == "true" ]]; then
     "model": "anthropic/claude-sonnet-4-6"
   },
   "dispatch": {
-    "auth_token": "",
+    "auth_token": "${AUTH_TOKEN}",
     "allowed_repos": [],
     "auto_accept": false
   },
@@ -59,6 +60,10 @@ if [[ "$FIRST_RUN" == "true" ]]; then
   }
 }
 EOF
+		echo "============================================"
+		echo "==> AUTH TOKEN (save this — shown only once):"
+		echo "==> ${AUTH_TOKEN}"
+		echo "============================================"
 	fi
 
 	# Initialize repos.json
@@ -83,9 +88,9 @@ if [[ -f /app/data/.ssh/id_ed25519 ]]; then
 	chmod 600 /home/cloudron/.ssh/id_ed25519
 	chmod 644 /home/cloudron/.ssh/id_ed25519.pub
 
-	# Accept GitHub host key automatically
+	# Pin GitHub SSH host key (avoids MITM risk from ssh-keyscan)
 	if ! grep -q "github.com" /home/cloudron/.ssh/known_hosts 2>/dev/null; then
-		ssh-keyscan -t ed25519 github.com >>/home/cloudron/.ssh/known_hosts 2>/dev/null || true
+		echo "github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl" >>/home/cloudron/.ssh/known_hosts
 	fi
 fi
 chown -R cloudron:cloudron /home/cloudron/.ssh

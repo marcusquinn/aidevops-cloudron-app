@@ -295,7 +295,7 @@ Edit via Cloudron's file manager or `cloudron exec`:
     "model": "anthropic/claude-sonnet-4-6"
   },
   "dispatch": {
-    "auth_token": "generate-a-secure-token-here",
+    "auth_token": "auto-generated-on-first-run",
     "allowed_repos": ["owner/repo1", "owner/repo2"],
     "auto_accept": false
   },
@@ -311,20 +311,30 @@ Edit via Cloudron's file manager or `cloudron exec`:
 |-------|-------------|
 | `worker.max_concurrent` | Maximum simultaneous workers |
 | `worker.model` | Default AI model for dispatched tasks |
-| `dispatch.auth_token` | Bearer token for API authentication (empty = no auth) |
+| `dispatch.auth_token` | Bearer token for API authentication (auto-generated on first run; empty = reject all) |
 | `dispatch.allowed_repos` | Restrict which repos can be cloned (empty = allow all) |
 | `dispatch.auto_accept` | Auto-accept dispatches without capacity check |
 | `pulse.enabled` | Run the supervisor pulse inside this container |
 | `pulse.interval_seconds` | Pulse frequency (default: 120s) |
 
-### Generating an Auth Token
+### Auth Token
+
+A secure random auth token is **auto-generated on first run** and printed to the app logs. Retrieve it with:
 
 ```bash
-# Generate a secure random token
-openssl rand -hex 32
+cloudron logs --app worker | grep "AUTH TOKEN"
 ```
 
-Add the generated token to `worker.json` under `dispatch.auth_token`, and use the same token in your `remote-hosts.json` on the dispatching machine.
+Copy this token into your `remote-hosts.json` on the dispatching machine. The token is stored in `/app/data/config/worker.json` and persists across restarts.
+
+To rotate the token, edit `worker.json` directly or delete it and restart the app to generate a new one:
+
+```bash
+cloudron exec --app worker -- rm /app/data/config/worker.json
+cloudron restart --app worker
+```
+
+**Secure by default:** If no auth token is configured (e.g., `worker.json` was manually edited to remove it), all authenticated API endpoints will reject requests. The API never falls back to unauthenticated access.
 
 ## Self-Hosted Pulse Mode
 
@@ -491,8 +501,14 @@ curl http://localhost:3000/health
 
 ## Security
 
+- **Secure by default** — auth token is auto-generated on first run; API rejects all authenticated requests when no token is configured
+- **No command injection** — all git and shell operations use argument arrays (`execFile`), never string interpolation
+- **Input validation** — repo slugs, task IDs, and branch names are validated against strict patterns before use
+- **Path traversal protection** — all file paths are resolved and verified to stay within expected directories
+- **XSS prevention** — all dynamic values in the dashboard HTML are escaped
+- **Constant-time auth** — token comparison uses `crypto.timingSafeEqual` to prevent timing attacks
+- **Pinned SSH host key** — GitHub's ed25519 key is hardcoded, not fetched via `ssh-keyscan`
 - API keys are stored as Cloudron environment variables (encrypted at rest)
-- The dispatch API requires a Bearer token (configurable in `worker.json`)
 - SSH keys are generated per-instance and stored in `/app/data/.ssh/`
 - Cloudron handles TLS termination — the app receives HTTP internally
 - `allowed_repos` restricts which repositories workers can clone
