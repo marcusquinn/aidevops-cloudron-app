@@ -18,7 +18,7 @@
 'use strict';
 
 const http = require('http');
-const { spawn, execFile, execSync } = require('child_process');
+const { spawn, execFile, execFileSync, execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -43,10 +43,18 @@ function isValidTaskId(taskId) {
   return typeof taskId === 'string' && /^[a-zA-Z0-9._-]+$/.test(taskId) && taskId.length <= 128;
 }
 
-/** Validate branch name: git-safe characters, no shell metacharacters. */
+/** Validate branch name: git-safe characters per git-check-ref-format rules. */
 function isValidBranch(branch) {
   return typeof branch === 'string' && /^[a-zA-Z0-9._\/-]+$/.test(branch)
-    && !branch.includes('..') && branch.length <= 256;
+    && !branch.includes('..') && !branch.includes('//')
+    && !branch.startsWith('/') && !branch.endsWith('/')
+    && !branch.endsWith('.lock') && branch.length <= 256;
+}
+
+/** Safely decode URI component — returns null on malformed percent-encoding. */
+function safeDecode(value) {
+  try { return decodeURIComponent(value); }
+  catch { return null; }
 }
 
 /** Escape HTML to prevent XSS in dashboard rendering. */
@@ -88,9 +96,12 @@ function checkAuth(req) {
   }
   const authHeader = req.headers.authorization || '';
   const provided = authHeader.replace(/^Bearer\s+/i, '');
-  // Constant-time comparison to prevent timing attacks
-  if (provided.length !== token.length) return false;
-  return crypto.timingSafeEqual(Buffer.from(provided), Buffer.from(token));
+  // Constant-time comparison — compare Buffer byte lengths, not string lengths,
+  // to prevent DoS via multi-byte UTF-8 characters causing timingSafeEqual to throw
+  const providedBuf = Buffer.from(String(provided), 'utf8');
+  const tokenBuf = Buffer.from(String(token), 'utf8');
+  if (providedBuf.length !== tokenBuf.length) return false;
+  return crypto.timingSafeEqual(providedBuf, tokenBuf);
 }
 
 function countWorkers() {
@@ -255,9 +266,16 @@ async function handleDispatch(req, res) {
   let body;
   try {
     body = await parseBody(req);
-  } catch {
+  } catch (err) {
+    const tooLarge = err && err.message === 'body too large';
+    res.writeHead(tooLarge ? 413 : 400, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: tooLarge ? 'body too large' : 'invalid JSON body' }));
+    return;
+  }
+
+  if (!body || typeof body !== 'object') {
     res.writeHead(400, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'invalid JSON body' }));
+    res.end(JSON.stringify({ error: 'invalid body — expected JSON object' }));
     return;
   }
 
@@ -465,8 +483,6 @@ function handleLogs(res, taskId) {
     return;
   }
   try {
-    // Use execFile with args array — no shell interpolation
-    const { execFileSync } = require('child_process');
     const content = execFileSync('tail', ['-500', logFile], { encoding: 'utf8', timeout: 5000 });
     res.writeHead(200, { 'Content-Type': 'text/plain' });
     res.end(content);
@@ -521,13 +537,25 @@ const server = http.createServer(async (req, res) => {
 
   const workerMatch = url.pathname.match(/^\/workers\/([^/]+)$/);
   if (workerMatch && req.method === 'DELETE') {
-    handleCancel(res, decodeURIComponent(workerMatch[1]));
+    const taskId = safeDecode(workerMatch[1]);
+    if (!taskId) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'invalid task_id encoding' }));
+      return;
+    }
+    handleCancel(res, taskId);
     return;
   }
 
   const logsMatch = url.pathname.match(/^\/workers\/([^/]+)\/logs$/);
   if (logsMatch && req.method === 'GET') {
-    handleLogs(res, decodeURIComponent(logsMatch[1]));
+    const taskId = safeDecode(logsMatch[1]);
+    if (!taskId) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'invalid task_id encoding' }));
+      return;
+    }
+    handleLogs(res, taskId);
     return;
   }
 

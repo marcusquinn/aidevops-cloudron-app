@@ -88,10 +88,14 @@ if [[ -f /app/data/.ssh/id_ed25519 ]]; then
 	chmod 600 /home/cloudron/.ssh/id_ed25519
 	chmod 644 /home/cloudron/.ssh/id_ed25519.pub
 
-	# Pin GitHub SSH host key (avoids MITM risk from ssh-keyscan)
-	if ! grep -q "github.com" /home/cloudron/.ssh/known_hosts 2>/dev/null; then
-		echo "github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl" >>/home/cloudron/.ssh/known_hosts
-	fi
+	# Pin GitHub SSH host key — replace any existing github.com entries to prevent
+	# poisoned keys from persisting. Avoids MITM risk from ssh-keyscan.
+	PINNED_GITHUB_KEY="github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl"
+	touch /home/cloudron/.ssh/known_hosts
+	grep -vE '^github\.com[ ,]' /home/cloudron/.ssh/known_hosts >/tmp/known_hosts.tmp || true
+	printf '%s\n' "$PINNED_GITHUB_KEY" >>/tmp/known_hosts.tmp
+	mv /tmp/known_hosts.tmp /home/cloudron/.ssh/known_hosts
+	chmod 644 /home/cloudron/.ssh/known_hosts
 fi
 chown -R cloudron:cloudron /home/cloudron/.ssh
 

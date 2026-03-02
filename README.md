@@ -327,7 +327,9 @@ cloudron logs --app worker | grep "AUTH TOKEN"
 
 Copy this token into your `remote-hosts.json` on the dispatching machine. The token is stored in `/app/data/config/worker.json` and persists across restarts.
 
-To rotate the token, edit `worker.json` directly or delete it and restart the app to generate a new one:
+To rotate the token, either edit the `auth_token` field in `worker.json` directly (preserves all other settings), or delete the file to regenerate everything from defaults:
+
+> **Warning:** Deleting `worker.json` resets all configuration (worker limits, allowed repos, pulse settings) to defaults. Back up the file first if you have custom settings: `cloudron exec --app worker -- cp /app/data/config/worker.json /app/data/config/worker.json.bak`
 
 ```bash
 cloudron exec --app worker -- rm /app/data/config/worker.json
