@@ -1,0 +1,23 @@
+# Cloudron
+.cloudron/
+
+# aidevops
+.agents/loop-state/
+*.local.md
+.aidevops.json
+.beads/
+
+# Build artifacts
+node_modules/
+dist/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+*.swp
+*.swo
+*~
+.vscode/
+.idea/

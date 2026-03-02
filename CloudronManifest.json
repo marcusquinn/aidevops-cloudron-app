@@ -1,0 +1,21 @@
+{
+  "id": "sh.aidevops.worker",
+  "title": "AI DevOps Worker",
+  "author": "Marcus Quinn <marcus@marcusquinn.com>",
+  "description": "Always-on remote worker node for AI DevOps. Runs headless OpenCode/Claude Code sessions, accepts task dispatches via HTTP API, and integrates with the aidevops supervisor pulse for autonomous code generation, PR creation, and multi-node orchestration.",
+  "tagline": "Remote AI worker node for autonomous code generation",
+  "version": "0.1.0",
+  "healthCheckPath": "/health",
+  "httpPort": 3000,
+  "manifestVersion": 2,
+  "website": "https://aidevops.sh",
+  "contactEmail": "marcus@marcusquinn.com",
+  "icon": "file://logo.png",
+  "documentationUrl": "https://github.com/marcusquinn/aidevops-cloudron-app",
+  "minBoxVersion": "7.4.0",
+  "memoryLimit": 2147483648,
+  "addons": {
+    "localstorage": {}
+  },
+  "tcpPorts": {}
+}
