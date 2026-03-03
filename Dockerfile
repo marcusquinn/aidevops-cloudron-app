@@ -29,14 +29,9 @@ RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
     && rm -rf /var/lib/apt/lists/*
 
 # ============================================
-# Claude Code CLI (primary AI runtime)
+# Claude Code CLI + aidevops CLI
 # ============================================
-RUN npm install -g @anthropic-ai/claude-code
-
-# ============================================
-# aidevops CLI
-# ============================================
-RUN npm install -g aidevops
+RUN npm install -g @anthropic-ai/claude-code aidevops
 
 # ============================================
 # Application code

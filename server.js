@@ -12,14 +12,13 @@
  * - /workers/:id/logs — Stream worker logs
  *
  * Authentication: Bearer token from worker.json dispatch.auth_token.
- * If auth_token is empty, all mutating endpoints are open (development mode).
  * Health and status endpoints are always unauthenticated (Cloudron requirement).
  */
 
 'use strict';
 
 const http = require('http');
-const { spawn, execSync } = require('child_process');
+const { spawn, execFile, execFileSync, execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -29,6 +28,44 @@ const WORKSPACE = '/app/data/workspace';
 const LOGS_DIR = '/app/data/logs';
 const CONFIG_FILE = '/app/data/config/worker.json';
 const VERSION = '0.1.0';
+
+// ============================================
+// Input validation
+// ============================================
+
+/** Validate repo slug: must be exactly "owner/repo" with safe characters. */
+function isValidRepo(repo) {
+  return typeof repo === 'string' && /^[a-zA-Z0-9._-]+\/[a-zA-Z0-9._-]+$/.test(repo);
+}
+
+/** Validate task ID: alphanumeric, dashes, dots only. */
+function isValidTaskId(taskId) {
+  return typeof taskId === 'string' && /^[a-zA-Z0-9._-]+$/.test(taskId) && taskId.length <= 128;
+}
+
+/** Validate branch name: git-safe characters per git-check-ref-format rules. */
+function isValidBranch(branch) {
+  return typeof branch === 'string' && /^[a-zA-Z0-9._\/-]+$/.test(branch)
+    && !branch.includes('..') && !branch.includes('//')
+    && !branch.startsWith('/') && !branch.endsWith('/')
+    && !branch.endsWith('.lock') && branch.length <= 256;
+}
+
+/** Safely decode URI component — returns null on malformed percent-encoding. */
+function safeDecode(value) {
+  try { return decodeURIComponent(value); }
+  catch { return null; }
+}
+
+/** Escape HTML to prevent XSS in dashboard rendering. */
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
 
 // ============================================
 // Active worker tracking
@@ -52,9 +89,19 @@ function readConfig() {
 function checkAuth(req) {
   const config = readConfig();
   const token = config.dispatch?.auth_token;
-  if (!token) return true; // dev mode
+  if (!token) {
+    // No token = reject all mutating requests (secure by default)
+    console.warn('[auth] No auth_token configured — rejecting request. Set dispatch.auth_token in worker.json.');
+    return false;
+  }
   const authHeader = req.headers.authorization || '';
-  return authHeader.replace(/^Bearer\s+/i, '') === token;
+  const provided = authHeader.replace(/^Bearer\s+/i, '');
+  // Constant-time comparison — compare Buffer byte lengths, not string lengths,
+  // to prevent DoS via multi-byte UTF-8 characters causing timingSafeEqual to throw
+  const providedBuf = Buffer.from(String(provided), 'utf8');
+  const tokenBuf = Buffer.from(String(token), 'utf8');
+  if (providedBuf.length !== tokenBuf.length) return false;
+  return crypto.timingSafeEqual(providedBuf, tokenBuf);
 }
 
 function countWorkers() {
@@ -101,6 +148,24 @@ function getStatus() {
 }
 
 // ============================================
+// Safe git operations (no shell interpolation)
+// ============================================
+
+/** Run git command with arguments as array (no shell). Returns promise. */
+function gitExec(args, options = {}) {
+  return new Promise((resolve, reject) => {
+    execFile('git', args, { encoding: 'utf8', timeout: 120000, ...options }, (err, stdout, stderr) => {
+      if (err) {
+        err.stderr = stderr;
+        reject(err);
+      } else {
+        resolve(stdout);
+      }
+    });
+  });
+}
+
+// ============================================
 // Dashboard HTML
 // ============================================
 
@@ -108,9 +173,11 @@ function renderDashboard(status) {
   const workerRows = [];
   for (const [taskId, info] of workers) {
     const elapsed = Math.floor((Date.now() - new Date(info.startTime).getTime()) / 60000);
+    const safeTaskId = escapeHtml(taskId);
+    const safeRepo = escapeHtml(info.repo);
     workerRows.push(
-      `<tr><td><code>${taskId}</code></td><td>${info.repo}</td><td>${elapsed}m</td>` +
-      `<td><a href="/workers/${taskId}/logs">logs</a></td></tr>`
+      `<tr><td><code>${safeTaskId}</code></td><td>${safeRepo}</td><td>${elapsed}m</td>` +
+      `<td><a href="/workers/${encodeURIComponent(taskId)}/logs">logs</a></td></tr>`
     );
   }
 
@@ -143,8 +210,8 @@ function renderDashboard(status) {
   <meta http-equiv="refresh" content="30">
 </head>
 <body>
-  <h1>AI DevOps Worker <span class="badge">${status.status}</span></h1>
-  <p class="meta">v${status.version} | up ${Math.floor(status.uptime_seconds / 60)}m |
+  <h1>AI DevOps Worker <span class="badge">${escapeHtml(status.status)}</span></h1>
+  <p class="meta">v${escapeHtml(status.version)} | up ${Math.floor(status.uptime_seconds / 60)}m |
      ${status.memory.available_mb}MB free / ${status.memory.total_mb}MB total |
      pulse: ${status.pulse.enabled ? 'on' : 'off'}</p>
 
@@ -173,7 +240,16 @@ function renderDashboard(status) {
 function parseBody(req) {
   return new Promise((resolve, reject) => {
     const chunks = [];
-    req.on('data', (chunk) => chunks.push(chunk));
+    let size = 0;
+    req.on('data', (chunk) => {
+      size += chunk.length;
+      if (size > 1048576) { // 1MB limit
+        reject(new Error('body too large'));
+        req.destroy();
+        return;
+      }
+      chunks.push(chunk);
+    });
     req.on('end', () => {
       try { resolve(JSON.parse(Buffer.concat(chunks).toString())); }
       catch (err) { reject(err); }
@@ -190,18 +266,50 @@ async function handleDispatch(req, res) {
   let body;
   try {
     body = await parseBody(req);
-  } catch {
+  } catch (err) {
+    const tooLarge = err && err.message === 'body too large';
+    res.writeHead(tooLarge ? 413 : 400, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: tooLarge ? 'body too large' : 'invalid JSON body' }));
+    return;
+  }
+
+  if (!body || typeof body !== 'object') {
     res.writeHead(400, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'invalid JSON body' }));
+    res.end(JSON.stringify({ error: 'invalid body — expected JSON object' }));
     return;
   }
 
   const { repo, prompt, model, branch } = body;
   const taskId = body.task_id || `dispatch-${crypto.randomBytes(4).toString('hex')}`;
 
+  // Validate all inputs before any use
   if (!repo || !prompt) {
     res.writeHead(400, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ error: 'repo and prompt are required' }));
+    return;
+  }
+
+  if (!isValidRepo(repo)) {
+    res.writeHead(400, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'invalid repo format — must be owner/repo' }));
+    return;
+  }
+
+  if (body.task_id && !isValidTaskId(body.task_id)) {
+    res.writeHead(400, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'invalid task_id — alphanumeric, dashes, dots only' }));
+    return;
+  }
+
+  if (branch && !isValidBranch(branch)) {
+    res.writeHead(400, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'invalid branch name' }));
+    return;
+  }
+
+  if (typeof prompt !== 'string' || prompt.length > 10000) {
+    res.writeHead(400, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'prompt must be a string under 10000 chars' }));
     return;
   }
 
@@ -227,31 +335,42 @@ async function handleDispatch(req, res) {
     return;
   }
 
-  // Clone or update repo
+  // Build safe paths — repo is validated, so replace is safe
   const repoDir = path.join(WORKSPACE, repo.replace('/', '-'));
   const logFile = path.join(LOGS_DIR, `${taskId}.log`);
+
+  // Verify resolved paths stay within expected directories (defense in depth)
+  if (!path.resolve(repoDir).startsWith(path.resolve(WORKSPACE))) {
+    res.writeHead(400, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'path traversal detected' }));
+    return;
+  }
+  if (!path.resolve(logFile).startsWith(path.resolve(LOGS_DIR))) {
+    res.writeHead(400, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'path traversal detected' }));
+    return;
+  }
 
   try {
     fs.mkdirSync(LOGS_DIR, { recursive: true });
 
+    // Use execFile (no shell) for all git operations
     if (!fs.existsSync(repoDir)) {
       console.log(`[dispatch] Cloning ${repo}`);
-      execSync(
-        `git clone --depth=50 "https://github.com/${repo}.git" "${repoDir}"`,
-        { encoding: 'utf8', timeout: 120000 }
-      );
+      await gitExec(['clone', '--depth=50', `https://github.com/${repo}.git`, repoDir]);
     } else {
       console.log(`[dispatch] Updating ${repoDir}`);
-      execSync('git fetch origin && git checkout main && git reset --hard origin/main', {
-        cwd: repoDir, encoding: 'utf8', timeout: 60000,
-      });
+      await gitExec(['fetch', 'origin'], { cwd: repoDir });
+      await gitExec(['checkout', 'main'], { cwd: repoDir });
+      await gitExec(['reset', '--hard', 'origin/main'], { cwd: repoDir });
     }
 
     if (branch && branch !== 'main') {
-      execSync(
-        `git checkout -B "${branch}" "origin/${branch}" 2>/dev/null || git checkout -b "${branch}"`,
-        { cwd: repoDir, encoding: 'utf8', timeout: 10000 }
-      );
+      try {
+        await gitExec(['checkout', '-B', branch, `origin/${branch}`], { cwd: repoDir });
+      } catch {
+        await gitExec(['checkout', '-b', branch], { cwd: repoDir });
+      }
     }
   } catch (err) {
     res.writeHead(500, { 'Content-Type': 'application/json' });
@@ -259,7 +378,7 @@ async function handleDispatch(req, res) {
     return;
   }
 
-  // Spawn headless worker
+  // Spawn headless worker — prompt passed as argument (no shell)
   console.log(`[dispatch] Starting worker ${taskId} in ${repoDir}`);
   const logStream = fs.createWriteStream(logFile, { flags: 'a' });
 
@@ -269,9 +388,11 @@ async function handleDispatch(req, res) {
     FULL_LOOP_HEADLESS: 'true',
     AIDEVOPS_REMOTE_DISPATCH: 'true',
   };
-  if (model) env.ANTHROPIC_MODEL = model;
+  if (model && typeof model === 'string' && /^[a-zA-Z0-9./_-]+$/.test(model)) {
+    env.ANTHROPIC_MODEL = model;
+  }
 
-  // Use claude CLI (installed globally)
+  // Use claude CLI (installed globally) — spawn with array args, no shell
   const workerProcess = spawn('claude', ['-p', prompt, '--allowedTools', '*'], {
     cwd: repoDir,
     env,
@@ -326,6 +447,11 @@ function handleListWorkers(res) {
 }
 
 function handleCancel(res, taskId) {
+  if (!isValidTaskId(taskId)) {
+    res.writeHead(400, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'invalid task_id' }));
+    return;
+  }
   const worker = workers.get(taskId);
   if (!worker) {
     res.writeHead(404, { 'Content-Type': 'application/json' });
@@ -339,14 +465,25 @@ function handleCancel(res, taskId) {
 }
 
 function handleLogs(res, taskId) {
+  if (!isValidTaskId(taskId)) {
+    res.writeHead(400, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'invalid task_id' }));
+    return;
+  }
   const logFile = path.join(LOGS_DIR, `${taskId}.log`);
+  // Defense in depth: verify resolved path stays within LOGS_DIR
+  if (!path.resolve(logFile).startsWith(path.resolve(LOGS_DIR))) {
+    res.writeHead(400, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'path traversal detected' }));
+    return;
+  }
   if (!fs.existsSync(logFile)) {
     res.writeHead(404, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ error: 'log not found' }));
     return;
   }
   try {
-    const content = execSync(`tail -500 "${logFile}"`, { encoding: 'utf8', timeout: 5000 });
+    const content = execFileSync('tail', ['-500', logFile], { encoding: 'utf8', timeout: 5000 });
     res.writeHead(200, { 'Content-Type': 'text/plain' });
     res.end(content);
   } catch {
@@ -400,13 +537,25 @@ const server = http.createServer(async (req, res) => {
 
   const workerMatch = url.pathname.match(/^\/workers\/([^/]+)$/);
   if (workerMatch && req.method === 'DELETE') {
-    handleCancel(res, workerMatch[1]);
+    const taskId = safeDecode(workerMatch[1]);
+    if (!taskId) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'invalid task_id encoding' }));
+      return;
+    }
+    handleCancel(res, taskId);
     return;
   }
 
   const logsMatch = url.pathname.match(/^\/workers\/([^/]+)\/logs$/);
   if (logsMatch && req.method === 'GET') {
-    handleLogs(res, logsMatch[1]);
+    const taskId = safeDecode(logsMatch[1]);
+    if (!taskId) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'invalid task_id encoding' }));
+      return;
+    }
+    handleLogs(res, taskId);
     return;
   }
 
