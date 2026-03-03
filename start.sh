@@ -80,28 +80,26 @@ fi
 # ============================================
 # PHASE 4: SSH Configuration
 # ============================================
-# Configure SSH to use the persistent key
-mkdir -p /home/cloudron/.ssh
-if [[ -f /app/data/.ssh/id_ed25519 ]]; then
-	cp /app/data/.ssh/id_ed25519 /home/cloudron/.ssh/id_ed25519
-	cp /app/data/.ssh/id_ed25519.pub /home/cloudron/.ssh/id_ed25519.pub
-	chmod 600 /home/cloudron/.ssh/id_ed25519
-	chmod 644 /home/cloudron/.ssh/id_ed25519.pub
+# /home/cloudron/.ssh is a symlink to /app/data/.ssh (set up in Dockerfile)
+# Write directly to /app/data/.ssh — no copy needed
+chmod 600 /app/data/.ssh/id_ed25519 2>/dev/null || true
+chmod 644 /app/data/.ssh/id_ed25519.pub 2>/dev/null || true
 
-	# Pin GitHub SSH host key — replace any existing github.com entries to prevent
-	# poisoned keys from persisting. Avoids MITM risk from ssh-keyscan.
-	PINNED_GITHUB_KEY="github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl"
-	touch /home/cloudron/.ssh/known_hosts
-	grep -vE '^github\.com[ ,]' /home/cloudron/.ssh/known_hosts >/tmp/known_hosts.tmp || true
-	printf '%s\n' "$PINNED_GITHUB_KEY" >>/tmp/known_hosts.tmp
-	mv /tmp/known_hosts.tmp /home/cloudron/.ssh/known_hosts
-	chmod 644 /home/cloudron/.ssh/known_hosts
-fi
-chown -R cloudron:cloudron /home/cloudron/.ssh
+# Pin GitHub SSH host key — replace any existing github.com entries to prevent
+# poisoned keys from persisting. Avoids MITM risk from ssh-keyscan.
+PINNED_GITHUB_KEY="github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl"
+touch /app/data/.ssh/known_hosts
+grep -vE '^github\.com[ ,]' /app/data/.ssh/known_hosts >/tmp/known_hosts.tmp || true
+printf '%s\n' "$PINNED_GITHUB_KEY" >>/tmp/known_hosts.tmp
+mv /tmp/known_hosts.tmp /app/data/.ssh/known_hosts
+chmod 644 /app/data/.ssh/known_hosts
 
 # ============================================
 # PHASE 5: Git Configuration
 # ============================================
+# /home/cloudron/.gitconfig is a symlink to /app/data/.gitconfig (set up in Dockerfile)
+touch /app/data/.gitconfig
+chown cloudron:cloudron /app/data/.gitconfig
 gosu cloudron:cloudron git config --global user.name "AI DevOps Worker"
 gosu cloudron:cloudron git config --global user.email "worker@aidevops.sh"
 gosu cloudron:cloudron git config --global init.defaultBranch main
