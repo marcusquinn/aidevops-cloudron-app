@@ -34,6 +34,17 @@ RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
 RUN npm install -g @anthropic-ai/claude-code aidevops
 
 # ============================================
+# Writable home directories (Cloudron read-only /app/code workaround)
+# /home/cloudron is in the read-only layer, so symlink writable paths
+# to /app/data (persistent) and /run (ephemeral) at build time.
+# ============================================
+RUN mkdir -p /app/data/.ssh /app/data/.config \
+    && rm -rf /home/cloudron/.ssh /home/cloudron/.config /home/cloudron/.gitconfig \
+    && ln -sfn /app/data/.ssh /home/cloudron/.ssh \
+    && ln -sfn /app/data/.config /home/cloudron/.config \
+    && ln -sfn /app/data/.gitconfig /home/cloudron/.gitconfig
+
+# ============================================
 # Application code
 # ============================================
 WORKDIR /app/code
