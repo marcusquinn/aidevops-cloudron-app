@@ -14,14 +14,20 @@ else
 fi
 
 # ============================================
-# PHASE 2: Directory Structure
+# PHASE 2: Directory Structure & Permissions
 # ============================================
 mkdir -p /app/data/config
 mkdir -p /app/data/workspace
 mkdir -p /app/data/logs
 mkdir -p /app/data/.ssh
+mkdir -p /app/data/.config
 mkdir -p /app/data/aidevops/agents
 mkdir -p /run/app
+# Ensure /app/data is owned by cloudron early — symlinks from /home/cloudron
+# point here, and git/ssh need write access before PHASE 5+
+touch /app/data/.gitconfig
+chown -R cloudron:cloudron /app/data
+chown -R cloudron:cloudron /run/app
 
 # ============================================
 # PHASE 3: First-Run Initialization
@@ -98,8 +104,7 @@ chmod 644 /app/data/.ssh/known_hosts
 # PHASE 5: Git Configuration
 # ============================================
 # /home/cloudron/.gitconfig is a symlink to /app/data/.gitconfig (set up in Dockerfile)
-touch /app/data/.gitconfig
-chown cloudron:cloudron /app/data/.gitconfig
+# Ownership already set in PHASE 2
 gosu cloudron:cloudron git config --global user.name "AI DevOps Worker"
 gosu cloudron:cloudron git config --global user.email "worker@aidevops.sh"
 gosu cloudron:cloudron git config --global init.defaultBranch main
@@ -126,10 +131,10 @@ export AIDEVOPS_NON_INTERACTIVE=true
 gosu cloudron:cloudron aidevops update 2>/dev/null || echo "==> aidevops update skipped (first run or no network)"
 
 # ============================================
-# PHASE 8: Permissions
+# PHASE 8: Final Permissions
 # ============================================
+# Re-chown in case earlier phases created new files as root
 chown -R cloudron:cloudron /app/data
-chown -R cloudron:cloudron /run/app
 
 # Mark initialized
 touch /app/data/.initialized
