@@ -25,9 +25,13 @@ mkdir -p /app/data/aidevops/agents
 mkdir -p /run/app
 # Ensure /app/data is owned by cloudron early — symlinks from /home/cloudron
 # point here, and git/ssh need write access before PHASE 5+
-touch /app/data/.gitconfig
-chown -R cloudron:cloudron /app/data
-chown -R cloudron:cloudron /run/app
+# Guard: only touch .gitconfig if it's not a symlink (prevents symlink attacks)
+[[ ! -L /app/data/.gitconfig ]] && touch /app/data/.gitconfig
+# Use -h (--no-dereference) to avoid following symlinks during recursive chown.
+# Without -h, a malicious symlink in /app/data could redirect ownership changes
+# to sensitive root-owned files (e.g., /etc/shadow), enabling privilege escalation.
+chown -hR cloudron:cloudron /app/data
+chown -hR cloudron:cloudron /run/app
 
 # ============================================
 # PHASE 3: First-Run Initialization
@@ -41,6 +45,9 @@ if [[ "$FIRST_RUN" == "true" ]]; then
 		ssh-keygen -t ed25519 -f /app/data/.ssh/id_ed25519 -N "" -C "aidevops-worker@cloudron"
 		echo "==> SSH public key (add to GitHub deploy keys):"
 		cat /app/data/.ssh/id_ed25519.pub
+		# Fix ownership — ssh-keygen runs as root, so generated files are root-owned.
+		# Without this, SSH operations by the cloudron user fail with permission denied.
+		chown -hR cloudron:cloudron /app/data/.ssh
 	fi
 
 	# Initialize default config with auto-generated auth token
@@ -88,17 +95,25 @@ fi
 # ============================================
 # /home/cloudron/.ssh is a symlink to /app/data/.ssh (set up in Dockerfile)
 # Write directly to /app/data/.ssh — no copy needed
-chmod 600 /app/data/.ssh/id_ed25519 2>/dev/null || true
-chmod 644 /app/data/.ssh/id_ed25519.pub 2>/dev/null || true
+# Guard: verify targets are not symlinks before chmod to prevent symlink attacks
+# that could change permissions on arbitrary files outside /app/data
+[[ ! -L /app/data/.ssh/id_ed25519 ]] && chmod 600 /app/data/.ssh/id_ed25519 2>/dev/null || true
+[[ ! -L /app/data/.ssh/id_ed25519.pub ]] && chmod 644 /app/data/.ssh/id_ed25519.pub 2>/dev/null || true
 
 # Pin GitHub SSH host key — replace any existing github.com entries to prevent
 # poisoned keys from persisting. Avoids MITM risk from ssh-keyscan.
 PINNED_GITHUB_KEY="github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl"
+# Guard: if known_hosts is a symlink, an attacker could point it at a sensitive
+# file (e.g., /etc/shadow). grep would read that file's contents and write them
+# to a world-readable temp file, leaking sensitive data. Remove rogue symlinks.
+if [[ -L /app/data/.ssh/known_hosts ]]; then
+	rm -f /app/data/.ssh/known_hosts
+fi
 touch /app/data/.ssh/known_hosts
 grep -vE '^github\.com[ ,]' /app/data/.ssh/known_hosts >/tmp/known_hosts.tmp || true
 printf '%s\n' "$PINNED_GITHUB_KEY" >>/tmp/known_hosts.tmp
 mv /tmp/known_hosts.tmp /app/data/.ssh/known_hosts
-chmod 644 /app/data/.ssh/known_hosts
+[[ ! -L /app/data/.ssh/known_hosts ]] && chmod 644 /app/data/.ssh/known_hosts
 
 # ============================================
 # PHASE 5: Git Configuration
@@ -134,7 +149,8 @@ gosu cloudron:cloudron aidevops update 2>/dev/null || echo "==> aidevops update 
 # PHASE 8: Final Permissions
 # ============================================
 # Re-chown in case earlier phases created new files as root
-chown -R cloudron:cloudron /app/data
+# Use -h to avoid following symlinks (same rationale as PHASE 2)
+chown -hR cloudron:cloudron /app/data
 
 # Mark initialized
 touch /app/data/.initialized
