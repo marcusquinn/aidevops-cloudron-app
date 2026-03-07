@@ -10,6 +10,8 @@ updates:
       include: "scope"
     labels:
       - "dependencies"
+    reviewers:
+      - "marcusquinn"
     open-pull-requests-limit: 5
   - package-ecosystem: "docker"
     directory: "/"
@@ -21,4 +23,6 @@ updates:
       include: "scope"
     labels:
       - "dependencies"
+    reviewers:
+      - "marcusquinn"
     open-pull-requests-limit: 5
