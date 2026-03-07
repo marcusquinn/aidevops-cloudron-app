@@ -26,3 +26,14 @@ Create `.md` files in this directory for domain-specific context:
 ```
 
 Each file is read on demand by AI assistants when relevant to the task.
+
+## Security
+
+This is a Cloudron app that runs headless AI agent sessions. It has elevated security requirements because it executes AI-generated code:
+
+- **Worker sandboxing**: Workers run with scoped GitHub tokens and limited filesystem access. See the framework's `tools/ai-assistants/headless-dispatch.md` for the full sandbox model.
+- **Prompt injection**: Task descriptions dispatched to workers may contain injection payloads. The framework's `prompt-guard-helper.sh` scans task content before dispatch. Ensure `dispatch.sh` integration is maintained.
+- **Credential isolation**: Workers must NOT have access to the host's SSH keys, gopass store, or credentials.sh. Use the fake HOME pattern from `worker-sandbox-helper.sh`.
+- **Container security**: Pin base image versions, run as non-root (`cloudron` user via `gosu`), minimize installed packages.
+
+For the full security model, see the [aidevops framework docs](https://github.com/marcusquinn/aidevops) `tools/security/prompt-injection-defender.md`.
