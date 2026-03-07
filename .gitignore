@@ -21,3 +21,13 @@ Thumbs.db
 *~
 .vscode/
 .idea/
+
+# Secrets and credentials
+.env
+.env.*
+*.pem
+*.key
+credentials.json
+secrets.json
+*.p12
+*.pfx
