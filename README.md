@@ -191,7 +191,7 @@ Add the worker to your local `~/.config/aidevops/remote-hosts.json`:
       "address": "https://worker.my.example.com",
       "transport": "http",
       "auth_token": "YOUR_AUTH_TOKEN",
-      "added": "YYYY-MM-DDTHH:MM:SSZ"
+      "added": "YYYY-MM-DDTHH:mm:ssZ"
     }
   }
 }
