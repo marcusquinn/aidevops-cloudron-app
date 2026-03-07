@@ -4,7 +4,7 @@
 
 | Version | Supported |
 |---------|-----------|
-| Latest  | Yes       |
+| `0.x`   | Yes       |
 
 ## Reporting a Vulnerability
 
@@ -12,7 +12,7 @@ If you discover a security vulnerability in this Cloudron app, please report it 
 
 **Do NOT open a public GitHub issue for security vulnerabilities.**
 
-Instead, please email: **6428977+marcusquinn@users.noreply.github.com**
+Instead, please use the **Report a vulnerability** button on the repository's [Security tab](https://github.com/marcusquinn/aidevops-cloudron-app/security/advisories/new). This uses GitHub's [Private Vulnerability Reporting](https://docs.github.com/en/code-security/security-advisories/managing-private-vulnerability-reporting-for-a-repository) feature, which provides a structured and secure workflow for handling disclosures.
 
 Include:
 
