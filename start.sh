@@ -95,9 +95,13 @@ fi
 # ============================================
 # /home/cloudron/.ssh is a symlink to /app/data/.ssh (set up in Dockerfile)
 # Write directly to /app/data/.ssh — no copy needed
-# Set SSH key permissions if the files exist (as regular files, not symlinks)
-[[ -f /app/data/.ssh/id_ed25519 ]] && chmod 600 /app/data/.ssh/id_ed25519
-[[ -f /app/data/.ssh/id_ed25519.pub ]] && chmod 644 /app/data/.ssh/id_ed25519.pub
+# Set SSH key permissions if the files exist as regular files (not symlinks).
+# SECURITY: [[ -f ]] follows symlinks in bash — it returns true for a symlink
+# whose target is a regular file. An attacker could symlink id_ed25519 to
+# /etc/shadow, causing chmod to change permissions on the target file.
+# The [[ ! -L ]] guard prevents this by rejecting symlinks before chmod runs.
+[[ ! -L /app/data/.ssh/id_ed25519 && -f /app/data/.ssh/id_ed25519 ]] && chmod 600 /app/data/.ssh/id_ed25519
+[[ ! -L /app/data/.ssh/id_ed25519.pub && -f /app/data/.ssh/id_ed25519.pub ]] && chmod 644 /app/data/.ssh/id_ed25519.pub
 
 # Pin GitHub SSH host key — replace any existing github.com entries to prevent
 # poisoned keys from persisting. Avoids MITM risk from ssh-keyscan.
@@ -108,11 +112,11 @@ PINNED_GITHUB_KEY="github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0Sd
 if [[ -L /app/data/.ssh/known_hosts ]]; then
 	rm -f /app/data/.ssh/known_hosts
 fi
-# Strip existing github.com entries (if file exists), then append the pinned key
+# Strip existing github.com entries (if file exists), then append the pinned key.
+# Initialize temp file first, then conditionally populate — avoids else branch.
+: >/tmp/known_hosts.tmp
 if [[ -f /app/data/.ssh/known_hosts ]]; then
 	grep -vE '^github\.com[ ,]' /app/data/.ssh/known_hosts >/tmp/known_hosts.tmp || true
-else
-	: >/tmp/known_hosts.tmp
 fi
 printf '%s\n' "$PINNED_GITHUB_KEY" >>/tmp/known_hosts.tmp
 mv /tmp/known_hosts.tmp /app/data/.ssh/known_hosts
