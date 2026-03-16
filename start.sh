@@ -56,8 +56,8 @@ if [[ "$FIRST_RUN" == "true" ]]; then
 		cat >/app/data/config/worker.json <<EOF
 {
   "worker": {
-    "max_concurrent": 1,
-    "ram_per_worker_mb": 1024,
+    "max_concurrent": 2,
+    "ram_per_worker_mb": 256,
     "idle_timeout_minutes": 30,
     "model": "anthropic/claude-sonnet-4-6"
   },

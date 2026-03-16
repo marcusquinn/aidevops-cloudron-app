@@ -262,15 +262,16 @@ Deploy to different Cloudron servers and add each to `remote-hosts.json`:
 
 ### Capacity Planning
 
-| Server RAM | Recommended `max_concurrent` | Notes |
-|------------|------------------------------|-------|
-| 2 GB | 1 | Minimum viable (tight) |
-| 4 GB | 1-2 | Comfortable for 1 worker |
-| 8 GB | 2-3 | Good for parallel tasks |
-| 16 GB | 4-6 | Production multi-worker |
-| 32 GB | 8+ | Heavy workload |
+Workers are headless Claude Code CLI processes that make API calls — they do not run local model inference. Each worker is a lightweight Node.js process (~150-300 MB RAM including git repo clone). The practical limit is usually API rate limits, not RAM.
 
-Each worker uses approximately 1 GB RAM. The app itself uses ~100 MB baseline.
+| Container Memory | Recommended `max_concurrent` | Notes |
+|------------------|------------------------------|-------|
+| 2 GB | 2-3 | Cloudron default (`memoryLimit`) |
+| 4 GB | 4-6 | Comfortable multi-worker |
+| 8 GB | 8-12 | Production parallel |
+| 16 GB+ | 12+ | Bottleneck shifts to API rate limits |
+
+The app server itself uses ~50 MB baseline. Each worker adds ~150-300 MB depending on repo size.
 
 ### Supervisor Load Balancing
 
@@ -289,8 +290,8 @@ Edit via Cloudron's file manager or `cloudron exec`:
 ```json
 {
   "worker": {
-    "max_concurrent": 1,
-    "ram_per_worker_mb": 1024,
+    "max_concurrent": 2,
+    "ram_per_worker_mb": 256,
     "idle_timeout_minutes": 30,
     "model": "anthropic/claude-sonnet-4-6"
   },

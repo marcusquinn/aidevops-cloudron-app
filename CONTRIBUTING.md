@@ -1,4 +1,4 @@
-# Contributing to aidevops-cloudron-app-chore-aidevops-init
+# Contributing to aidevops-cloudron-app
 
 Thanks for your interest in contributing!
 
