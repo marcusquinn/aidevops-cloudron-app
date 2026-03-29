@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # ============================================
 # Node.js 20 LTS via NodeSource
-# cloudron/base includes Node 18 but Claude Code benefits from 20 LTS
+# cloudron/base includes Node 18; server.js and aidevops CLI need 20 LTS
 # ============================================
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y --no-install-recommends nodejs \
@@ -29,9 +29,13 @@ RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
     && rm -rf /var/lib/apt/lists/*
 
 # ============================================
-# Claude Code CLI + aidevops CLI
+# OpenCode CLI (from GitHub releases) + aidevops CLI (from npm)
 # ============================================
-RUN npm install -g @anthropic-ai/claude-code aidevops
+RUN curl -fsSL "https://github.com/anomalyco/opencode/releases/latest/download/opencode-linux-x64.tar.gz" \
+    | tar -xz -C /usr/local/bin \
+    && chmod +x /usr/local/bin/opencode \
+    && opencode --version \
+    && npm install -g aidevops
 
 # ============================================
 # Writable home directories (Cloudron read-only /app/code workaround)

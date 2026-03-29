@@ -392,8 +392,8 @@ async function handleDispatch(req, res) {
     env.ANTHROPIC_MODEL = model;
   }
 
-  // Use claude CLI (installed globally) — spawn with array args, no shell
-  const workerProcess = spawn('claude', ['-p', prompt, '--allowedTools', '*'], {
+  // Use opencode CLI (installed globally) — spawn with array args, no shell
+  const workerProcess = spawn('opencode', ['-p', prompt, '--allowedTools', '*'], {
     cwd: repoDir,
     env,
     stdio: ['ignore', 'pipe', 'pipe'],

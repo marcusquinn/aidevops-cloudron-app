@@ -11,11 +11,11 @@
 
 ## Project Overview
 
-Cloudron app that provides an always-on remote worker node for [aidevops](https://aidevops.sh). Runs headless Claude Code sessions inside a Docker container, accepts task dispatches via HTTP API, and integrates with the aidevops supervisor pulse for autonomous code generation and PR creation.
+Cloudron app that provides an always-on remote worker node for [aidevops](https://aidevops.sh). Runs headless OpenCode sessions inside a Docker container, accepts task dispatches via HTTP API, and integrates with the aidevops supervisor pulse for autonomous code generation and PR creation.
 
 ## Architecture
 
-Single-process Node.js server (`server.js`) handling health checks, a browser dashboard, and task dispatch. Workers are spawned as child processes running `claude -p` with `/full-loop` prompts. The container runs as the `cloudron` user (UID 1000) via `gosu`.
+Single-process Node.js server (`server.js`) handling health checks, a browser dashboard, and task dispatch. Workers are spawned as child processes running `opencode -p` with `/full-loop` prompts. The container runs as the `cloudron` user (UID 1000) via `gosu`.
 
 - `/app/code/` — read-only application code (Dockerfile, start.sh, server.js)
 - `/app/data/` — persistent storage (config, workspace, logs, SSH keys)
