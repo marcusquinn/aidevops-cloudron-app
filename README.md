@@ -1,12 +1,12 @@
 # AI DevOps Worker — Cloudron App
 
-Always-on remote worker node for [aidevops](https://aidevops.sh). Runs headless Claude Code sessions inside a Cloudron-managed Docker container, accepts task dispatches via HTTP API, and integrates with the aidevops supervisor pulse for autonomous code generation and PR creation.
+Always-on remote worker node for [aidevops](https://aidevops.sh). Runs headless OpenCode sessions inside a Cloudron-managed Docker container, accepts task dispatches via HTTP API, and integrates with the aidevops supervisor pulse for autonomous code generation and PR creation.
 
 ## What This Does
 
 - Provides a **sandboxed, always-on compute node** for AI-powered code generation
 - Accepts task dispatches from your local aidevops supervisor or directly via HTTP API
-- Spawns headless Claude Code workers that clone repos, implement features, and create PRs
+- Spawns headless OpenCode workers that clone repos, implement features, and create PRs
 - Runs alongside your local machine — the supervisor can dispatch to both local and remote workers
 - Managed by Cloudron: automatic SSL, backups, updates, and monitoring
 
@@ -20,9 +20,9 @@ Your Machine (local)                    Cloudron Server (remote)
 |   (every 2 min)        |  POST        |     /dispatch                    |
 |                        |  /dispatch   |     /workers                     |
 | Local workers          |              |     /health                      |
-|   claude -p "..."      |              |                                  |
+|   opencode -p "..."    |              |                                  |
 |                        |              | Headless workers                 |
-| GitHub <--push/PR------+              |   claude -p "/full-loop ..."     |
+| GitHub <--push/PR------+              |   opencode -p "/full-loop ..."   |
 |        <--push/PR------+--------------+   git push -> GitHub             |
 +------------------------+              +----------------------------------+
 ```
@@ -262,7 +262,7 @@ Deploy to different Cloudron servers and add each to `remote-hosts.json`:
 
 ### Capacity Planning
 
-Workers are headless Claude Code CLI processes that make API calls — they do not run local model inference. Each worker is a lightweight Node.js process (~150-300 MB RAM including git repo clone). The practical limit is usually API rate limits, not RAM.
+Workers are headless OpenCode CLI processes that make API calls — they do not run local model inference. Each worker is a lightweight Node.js process (~150-300 MB RAM including git repo clone). The practical limit is usually API rate limits, not RAM.
 
 | Container Memory | Recommended `max_concurrent` | Notes |
 |------------------|------------------------------|-------|
