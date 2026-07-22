@@ -1,4 +1,4 @@
-FROM cloudron/base:5.0.0
+FROM cloudron/base:5.0.0@sha256:04fd70dbd8ad6149c19de39e35718e024417c3e01dc9c6637eaf4a41ec4e596c
 
 # ============================================
 # System dependencies
@@ -31,11 +31,14 @@ RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
 # ============================================
 # OpenCode CLI (from GitHub releases) + aidevops CLI (from npm)
 # ============================================
-RUN curl -fsSL "https://github.com/anomalyco/opencode/releases/latest/download/opencode-linux-x64.tar.gz" \
+ARG OPENCODE_VERSION=1.18.4
+ARG AIDEVOPS_VERSION=3.32.166
+
+RUN curl -fsSL "https://github.com/anomalyco/opencode/releases/download/v${OPENCODE_VERSION}/opencode-linux-x64.tar.gz" \
     | tar -xz -C /usr/local/bin \
     && chmod +x /usr/local/bin/opencode \
     && opencode --version \
-    && npm install -g aidevops
+    && npm install -g "aidevops@${AIDEVOPS_VERSION}"
 
 # ============================================
 # Writable home directories (Cloudron read-only /app/code workaround)
