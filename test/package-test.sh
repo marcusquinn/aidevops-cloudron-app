@@ -28,11 +28,12 @@ main() {
 	assert_contains Dockerfile 'ARG AIDEVOPS_VERSION=3.32.166' || return 1
 	assert_contains Dockerfile "releases/download/v\${OPENCODE_VERSION}/opencode-linux-x64.tar.gz" || return 1
 	assert_contains Dockerfile "npm install -g \"aidevops@\${AIDEVOPS_VERSION}\"" || return 1
-	if grep -Fq '/releases/latest/' "${ROOT_DIR}/Dockerfile"; then
+	if grep -Eq '/releases/latest([/?#]|$)' "${ROOT_DIR}/Dockerfile"; then
 		fail "Dockerfile contains a moving latest release download" || return 1
 	fi
 	assert_contains .github/workflows/cloudron-package-release.yml "- 'v*'" || return 1
-	assert_contains .github/workflows/cloudron-package-release.yml 'uses: marcusquinn/aidevops/.github/workflows/cloudron-package-release-reusable.yml@main' || return 1
+	assert_contains .github/workflows/cloudron-package-release.yml 'uses: marcusquinn/aidevops/.github/workflows/cloudron-package-release-reusable.yml@22a6b4b29087ce2fcf3857596a40ff7b2c436482' || return 1
+	assert_contains .github/workflows/cloudron-package-release.yml 'aidevops_ref: 22a6b4b29087ce2fcf3857596a40ff7b2c436482' || return 1
 	bash -n "${ROOT_DIR}/start.sh"
 	shellcheck "${ROOT_DIR}/test/package-test.sh"
 	printf 'PASS: deterministic Cloudron package lifecycle contract\n'
