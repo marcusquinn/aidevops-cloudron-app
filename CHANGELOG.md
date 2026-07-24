@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-07-24
+
+### Fixed
+
+- Restored Cloudron 9.1 and 9.2 installation and update compatibility by
+  temporarily omitting `packageUrl` until Cloudron 10.0.0 is numerically
+  available.
+
 ## [0.1.2] - 2026-07-24
 
 ### Changed

@@ -65,6 +65,8 @@ Compatible with [todo-md](https://github.com/todo-md/todo-md), [todomd](https://
 
 - [ ] t009 Publish AI DevOps Worker 0.1.3 Cloudron catalog ref:GH#48
 
+- [ ] t010 Fix Worker 0.1.3 release changelog validation ref:GH#50
+
 ## In Progress
 
 <!--TOON:in_progress[0]{id,desc,owner,tags,est,risk,logged,started,status}:
