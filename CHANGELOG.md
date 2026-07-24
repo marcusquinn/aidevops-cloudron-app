@@ -7,11 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-07-24
+
 ### Added
 
 - Managed tag-triggered Cloudron package release validation.
+- Cloudron community catalog metadata, publishing runbook, and reviewed icon
+  and 3:1 hero assets.
 
 ### Changed
 
-- Pinned the final Cloudron base image, OpenCode `1.18.4`, and aidevops
-  `3.32.166` instead of resolving moving latest versions during builds.
+- Pinned the final Cloudron base image and OpenCode `1.18.4` instead of
+  resolving moving versions during builds.
+- Updated and pinned the bundled aidevops CLI to `3.32.176`.
+- Require Cloudron `9.1.0` for community-package publishing metadata.

@@ -1,0 +1,4 @@
+[0.1.1]
+* Add deterministic release validation and community-package metadata.
+* Add reviewed icon and 3:1 hero assets.
+* Update the bundled aidevops CLI to 3.32.176.
