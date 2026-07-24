@@ -40,6 +40,47 @@
             "creationDate": "Thu, 23 Jul 2026 23:21:17 GMT",
             "ts": "Fri, 24 Jul 2026 00:48:34 GMT",
             "publishState": "published"
+        },
+        "0.1.2": {
+            "manifest": {
+                "id": "sh.aidevops.worker",
+                "title": "AI DevOps Worker",
+                "author": "Marcus Quinn <marcus@marcusquinn.com>",
+                "description": "Always-on remote worker node for AI DevOps. Runs headless OpenCode sessions, accepts task dispatches via HTTP API, and integrates with the aidevops supervisor pulse for autonomous code generation, PR creation, and multi-node orchestration.",
+                "tagline": "Remote AI worker node for autonomous code generation",
+                "version": "0.1.2",
+                "upstreamVersion": "3.32.177",
+                "healthCheckPath": "/health",
+                "httpPort": 3000,
+                "manifestVersion": 2,
+                "website": "https://aidevops.sh",
+                "contactEmail": "marcus@marcusquinn.com",
+                "icon": "file://logo.png",
+                "documentationUrl": "https://github.com/marcusquinn/aidevops-cloudron-app",
+                "minBoxVersion": "10.0.0",
+                "memoryLimit": 2147483648,
+                "addons": {
+                    "localstorage": {}
+                },
+                "tcpPorts": {},
+                "iconUrl": "https://raw.githubusercontent.com/marcusquinn/aidevops-cloudron-app/main/logo.png",
+                "packagerName": "Marcus Quinn",
+                "packagerUrl": "https://github.com/marcusquinn",
+                "packageUrl": "https://github.com/marcusquinn/aidevops-cloudron-app",
+                "mediaLinks": [
+                    "https://aidevops.sh/og-image.png?v=3"
+                ],
+                "tags": [
+                    "ai",
+                    "automation",
+                    "developer-tools"
+                ],
+                "changelog": "* Update the bundled aidevops CLI to 3.32.177.\n* Link the package repository and require Cloudron 10.0.0.\n",
+                "dockerImage": "marcusquinn/aidevops-cloudron-worker:0.1.2"
+            },
+            "creationDate": "Fri, 24 Jul 2026 02:12:15 GMT",
+            "ts": "Fri, 24 Jul 2026 02:13:01 GMT",
+            "publishState": "published"
         }
     }
 }
