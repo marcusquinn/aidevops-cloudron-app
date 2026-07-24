@@ -1,0 +1,45 @@
+{
+    "stable": true,
+    "versions": {
+        "0.1.1": {
+            "manifest": {
+                "id": "sh.aidevops.worker",
+                "title": "AI DevOps Worker",
+                "author": "Marcus Quinn <marcus@marcusquinn.com>",
+                "description": "Always-on remote worker node for AI DevOps. Runs headless OpenCode sessions, accepts task dispatches via HTTP API, and integrates with the aidevops supervisor pulse for autonomous code generation, PR creation, and multi-node orchestration.",
+                "tagline": "Remote AI worker node for autonomous code generation",
+                "version": "0.1.1",
+                "upstreamVersion": "3.32.176",
+                "healthCheckPath": "/health",
+                "httpPort": 3000,
+                "manifestVersion": 2,
+                "website": "https://aidevops.sh",
+                "contactEmail": "marcus@marcusquinn.com",
+                "icon": "file://logo.png",
+                "documentationUrl": "https://github.com/marcusquinn/aidevops-cloudron-app",
+                "minBoxVersion": "9.1.0",
+                "memoryLimit": 2147483648,
+                "addons": {
+                    "localstorage": {}
+                },
+                "tcpPorts": {},
+                "iconUrl": "https://raw.githubusercontent.com/marcusquinn/aidevops-cloudron-app/main/logo.png",
+                "packagerName": "Marcus Quinn",
+                "packagerUrl": "https://github.com/marcusquinn",
+                "mediaLinks": [
+                    "https://aidevops.sh/og-image.png?v=3"
+                ],
+                "tags": [
+                    "ai",
+                    "automation",
+                    "developer-tools"
+                ],
+                "changelog": "* Add deterministic release validation and community-package metadata.\n* Add reviewed icon and 3:1 hero assets.\n* Update the bundled aidevops CLI to 3.32.176.\n",
+                "dockerImage": "marcusquinn/aidevops-cloudron-worker:0.1.1"
+            },
+            "creationDate": "Thu, 23 Jul 2026 23:21:17 GMT",
+            "ts": "Thu, 23 Jul 2026 23:21:17 GMT",
+            "publishState": "testing"
+        }
+    }
+}

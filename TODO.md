@@ -57,6 +57,8 @@ Compatible with [todo-md](https://github.com/todo-md/todo-md), [todomd](https://
 <!--TOON:backlog[0]{id,desc,owner,tags,est,risk,logged,status}:
 -->
 
+- [ ] t004 Prepare AI DevOps Worker community package publishing ref:GH#36
+
 ## In Progress
 
 <!--TOON:in_progress[0]{id,desc,owner,tags,est,risk,logged,started,status}:
