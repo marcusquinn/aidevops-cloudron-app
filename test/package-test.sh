@@ -28,6 +28,7 @@ main() {
 	[[ -f "${ROOT_DIR}/media/hero.png" ]] || fail "media/hero.png is missing" || return 1
 	jq -e '.stable == true and (.versions | type == "object")' "${ROOT_DIR}/CloudronVersions.json" >/dev/null || fail "Version catalog contract failed" || return 1
 	assert_contains CHANGELOG '[0.1.3]' || return 1
+	assert_contains CHANGELOG.md '[0.1.3]' || return 1
 	assert_contains PUBLISHING.md 'cloudron versions update --version=<VERSION> --state=published' || return 1
 	jq -e '.versions["0.1.2"].publishState == "published"' "${ROOT_DIR}/CloudronVersions.json" >/dev/null || fail "Published catalog state contract failed" || return 1
 	assert_contains Dockerfile 'cloudron/base:5.0.0@sha256:04fd70dbd8ad6149c19de39e35718e024417c3e01dc9c6637eaf4a41ec4e596c' || return 1
