@@ -1,3 +1,7 @@
+[0.1.2]
+* Update the bundled aidevops CLI to 3.32.177.
+* Link the package repository and require Cloudron 10.0.0.
+
 [0.1.1]
 * Add deterministic release validation and community-package metadata.
 * Add reviewed icon and 3:1 hero assets.

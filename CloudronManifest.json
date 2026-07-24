@@ -13,7 +13,7 @@
   "contactEmail": "marcus@marcusquinn.com",
   "icon": "file://logo.png",
   "documentationUrl": "https://github.com/marcusquinn/aidevops-cloudron-app",
-  "minBoxVersion": "9.1.0",
+  "minBoxVersion": "10.0.0",
   "memoryLimit": 2147483648,
   "addons": {
     "localstorage": {}
@@ -22,6 +22,7 @@
   "iconUrl": "https://raw.githubusercontent.com/marcusquinn/aidevops-cloudron-app/main/logo.png",
   "packagerName": "Marcus Quinn",
   "packagerUrl": "https://github.com/marcusquinn",
+  "packageUrl": "https://github.com/marcusquinn/aidevops-cloudron-app",
   "mediaLinks": [
     "https://aidevops.sh/og-image.png?v=3"
   ],
