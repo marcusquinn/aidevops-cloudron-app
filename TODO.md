@@ -59,6 +59,8 @@ Compatible with [todo-md](https://github.com/todo-md/todo-md), [todomd](https://
 
 - [ ] t004 Prepare AI DevOps Worker community package publishing ref:GH#36
 
+- [ ] t005 Publish AI DevOps Worker 0.1.1 Cloudron catalog ref:GH#39
+
 ## In Progress
 
 <!--TOON:in_progress[0]{id,desc,owner,tags,est,risk,logged,started,status}:
