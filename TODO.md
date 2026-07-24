@@ -61,6 +61,8 @@ Compatible with [todo-md](https://github.com/todo-md/todo-md), [todomd](https://
 
 - [ ] t005 Publish AI DevOps Worker 0.1.1 Cloudron catalog ref:GH#39
 
+- [ ] t008 Restore Cloudron 9.2 compatibility ref:GH#46
+
 ## In Progress
 
 <!--TOON:in_progress[0]{id,desc,owner,tags,est,risk,logged,started,status}:
