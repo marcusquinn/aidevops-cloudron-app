@@ -1,5 +1,6 @@
 [0.1.6]
 * Update the bundled aidevops CLI to 3.32.186.
+* Install ripgrep for aidevops setup and worker tooling.
 
 [0.1.5]
 * Update the bundled aidevops CLI to 3.32.181.

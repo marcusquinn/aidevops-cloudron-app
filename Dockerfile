@@ -5,6 +5,7 @@ FROM cloudron/base:5.0.0@sha256:04fd70dbd8ad6149c19de39e35718e024417c3e01dc9c663
 # ============================================
 RUN apt-get update && apt-get install -y --no-install-recommends \
     jq \
+    ripgrep \
     && rm -rf /var/lib/apt/lists/*
 
 # ============================================
