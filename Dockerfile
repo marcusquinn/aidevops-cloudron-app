@@ -5,6 +5,7 @@ FROM cloudron/base:5.0.0@sha256:04fd70dbd8ad6149c19de39e35718e024417c3e01dc9c663
 # ============================================
 RUN apt-get update && apt-get install -y --no-install-recommends \
     jq \
+    ripgrep \
     && rm -rf /var/lib/apt/lists/*
 
 # ============================================
@@ -32,7 +33,7 @@ RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
 # OpenCode CLI (from GitHub releases) + aidevops CLI (from npm)
 # ============================================
 ARG OPENCODE_VERSION=1.18.4
-ARG AIDEVOPS_VERSION=3.32.181
+ARG AIDEVOPS_VERSION=3.32.186
 
 RUN curl -fsSL "https://github.com/anomalyco/opencode/releases/download/v${OPENCODE_VERSION}/opencode-linux-x64.tar.gz" \
     | tar -xz -C /usr/local/bin \
