@@ -27,6 +27,7 @@ main() {
 	[[ -f "${ROOT_DIR}/PUBLISHING.md" ]] || fail "PUBLISHING.md is missing" || return 1
 	[[ -f "${ROOT_DIR}/media/hero.png" ]] || fail "media/hero.png is missing" || return 1
 	jq -e '.stable == true and (.versions | type == "object")' "${ROOT_DIR}/CloudronVersions.json" >/dev/null || fail "Version catalog contract failed" || return 1
+	jq -e '[.versions[].manifest | has("packageUrl")] | all(. == false)' "${ROOT_DIR}/CloudronVersions.json" >/dev/null || fail "Historical catalog entries must remain parseable by Cloudron 9.1 and 9.2" || return 1
 	assert_contains CHANGELOG '* Update the bundled aidevops CLI to 3.32.189.' || return 1
 	assert_contains CHANGELOG.md "- Updated and pinned the bundled aidevops CLI to \`3.32.189\`." || return 1
 	assert_contains PUBLISHING.md 'cloudron versions update --version=<VERSION> --state=published' || return 1
