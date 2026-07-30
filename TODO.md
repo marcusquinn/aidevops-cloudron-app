@@ -67,6 +67,8 @@ Compatible with [todo-md](https://github.com/todo-md/todo-md), [todomd](https://
 
 - [ ] t010 Fix Worker 0.1.3 release changelog validation ref:GH#50
 
+- [ ] t011 Repair historical catalog entry for Cloudron 9.2 #bug ref:GH#66
+
 ## In Progress
 
 <!--TOON:in_progress[0]{id,desc,owner,tags,est,risk,logged,started,status}:
