@@ -29,7 +29,7 @@ jobs:
       immutable_ref: ${{ steps.existing.outputs.immutable_ref }}
     steps:
       - name: Check out repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f544c9b2a8e # v7.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -88,7 +88,7 @@ jobs:
       image_ref: ${{ steps.image.outputs.image_ref }}
     steps:
       - name: Check out the verified revision
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f544c9b2a8e # v7.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ needs.preflight.outputs.before_sha }}
           fetch-depth: 1
@@ -140,7 +140,7 @@ jobs:
       contents: write
     steps:
       - name: Check out the verified revision
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f544c9b2a8e # v7.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ needs.preflight.outputs.before_sha }}
           fetch-depth: 0
