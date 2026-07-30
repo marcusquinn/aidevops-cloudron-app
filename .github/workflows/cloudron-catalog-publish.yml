@@ -89,6 +89,7 @@ jobs:
     if: github.event_name != 'pull_request' && needs.preflight.outputs.publish == 'true'
     runs-on: ubuntu-24.04
     permissions:
+      attestations: write
       contents: read
       packages: write
       id-token: write

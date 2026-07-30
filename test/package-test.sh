@@ -51,6 +51,7 @@ main() {
 	assert_contains .github/workflows/cloudron-catalog-publish.yml "github.event_name != 'pull_request'" || return 1
 	assert_contains .github/workflows/cloudron-catalog-publish.yml 'Require trusted publication source' || return 1
 	assert_contains .github/workflows/cloudron-catalog-publish.yml 'EXPECTED_REF: refs/heads/main' || return 1
+	assert_contains .github/workflows/cloudron-catalog-publish.yml 'attestations: write' || return 1
 	assert_contains .github/workflows/cloudron-catalog-publish.yml 'scripts/publish-cloudron-catalog.sh' || return 1
 	assert_contains .github/workflows/cloudron-catalog-publish.yml ".versions[\$version].manifest.dockerImage" || return 1
 	assert_contains .github/workflows/cloudron-catalog-publish.yml 'persist-credentials: false' || return 1
