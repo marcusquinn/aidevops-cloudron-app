@@ -14,7 +14,7 @@ concurrency:
 env:
   IMAGE_REPOSITORY: ghcr.io/marcusquinn/aidevops-cloudron-worker
   CLOUDRON_CLI_VERSION: 8.2.6
-  CLOUDRON_CLI_INTEGRITY: sha512-tyrKq6d6F/s3MqN9LB43+/fWp+7Q4oVujcOYkIv78gWYMHlhi5OsrRpKbXogJItyjo/yeyR/ZX6oHgRCHHyx3w==
+  CLOUDRON_CLI_INTEGRITY: sha512-LHd+4u6pJxDtHX1JuVuWqrUuTbkDu+iH4jjNWW6JgB4+iDLusp08rpt6gifTFPbQjbCZHhnD8LbAGzM1NzDCXw==
 
 jobs:
   preflight:
@@ -160,9 +160,9 @@ jobs:
 
       - name: Install pinned Cloudron CLI
         run: |
+          registry_integrity="$(npm view "cloudron@${CLOUDRON_CLI_VERSION}" dist.integrity)"
+          test "${registry_integrity}" = "${CLOUDRON_CLI_INTEGRITY}"
           npm install --global --ignore-scripts "cloudron@${CLOUDRON_CLI_VERSION}"
-          installed_integrity="$(npm view "cloudron@${CLOUDRON_CLI_VERSION}" dist.integrity)"
-          test "${installed_integrity}" = "${CLOUDRON_CLI_INTEGRITY}"
           test "$(cloudron --version)" = "${CLOUDRON_CLI_VERSION}"
 
       - name: Set up Docker Buildx for anonymous verification

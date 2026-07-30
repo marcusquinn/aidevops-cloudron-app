@@ -20,6 +20,18 @@ assert_contains() {
 	return 0
 }
 
+assert_precedes() {
+	local relative_path="$1"
+	local first="$2"
+	local second="$3"
+	local first_line=""
+	local second_line=""
+	first_line="$(grep -nF -- "$first" "${ROOT_DIR}/${relative_path}" | cut -d: -f1)"
+	second_line="$(grep -nF -- "$second" "${ROOT_DIR}/${relative_path}" | cut -d: -f1)"
+	[[ -n "$first_line" && -n "$second_line" && "$first_line" -lt "$second_line" ]] || fail "${relative_path} must place ${first} before ${second}" || return 1
+	return 0
+}
+
 main() {
 	jq -e '.manifestVersion == 2 and .version == "0.1.7" and .upstreamVersion == "3.32.189" and .minBoxVersion == "9.1.0" and .iconUrl != "" and .packagerName != "" and .packagerUrl == "https://github.com/marcusquinn" and (has("packageUrl") | not) and (.mediaLinks | length) > 0 and .changelog == "file://CHANGELOG"' \
 		"${ROOT_DIR}/CloudronManifest.json" >/dev/null || fail "Manifest version contract failed" || return 1
@@ -52,6 +64,8 @@ main() {
 	assert_contains .github/workflows/cloudron-catalog-publish.yml 'Require trusted publication source' || return 1
 	assert_contains .github/workflows/cloudron-catalog-publish.yml 'EXPECTED_REF: refs/heads/main' || return 1
 	assert_contains .github/workflows/cloudron-catalog-publish.yml 'attestations: write' || return 1
+	assert_contains .github/workflows/cloudron-catalog-publish.yml 'CLOUDRON_CLI_INTEGRITY: sha512-LHd+4u6pJxDtHX1JuVuWqrUuTbkDu+iH4jjNWW6JgB4+iDLusp08rpt6gifTFPbQjbCZHhnD8LbAGzM1NzDCXw==' || return 1
+	assert_precedes .github/workflows/cloudron-catalog-publish.yml 'registry_integrity=' 'npm install --global --ignore-scripts' || return 1
 	assert_contains .github/workflows/cloudron-catalog-publish.yml 'scripts/publish-cloudron-catalog.sh' || return 1
 	assert_contains .github/workflows/cloudron-catalog-publish.yml ".versions[\$version].manifest.dockerImage" || return 1
 	assert_contains .github/workflows/cloudron-catalog-publish.yml 'persist-credentials: false' || return 1
