@@ -37,6 +37,22 @@ tag or digest into the catalog.
 The workflow is the only supported catalog writer. A merge that does not bump
 `CloudronManifest.json` is a verified no-op and does not create another release.
 
+## Release credential
+
+The protected `main` branch requires the repository secret
+`CLOUDRON_RELEASE_PAT`. Use a separate fine-grained PAT for this repository,
+owned by a repository administrator and limited to this repository with only
+`Contents: Read and write`. Do not grant workflow permissions or reuse the
+credential in another repository. The workflow exposes it only to the final
+validated catalog commit and atomic tag push; GHCR, attestations, and GitHub
+release operations continue to use `GITHUB_TOKEN`. The generated catalog commit
+includes `[skip ci]` so its PAT-authenticated branch and tag push cannot launch
+duplicate publication workflows.
+
+If the PAT is absent, expired, or revoked, publication fails before the push
+without changing the catalog or tag. Rotate the repository secret and rerun the
+workflow from `main`.
+
 Published entries are append-only. For a critical bad release, run
 `cloudron versions revoke`, bump the package version, rebuild, and add a new
 entry. Do not mutate the manifest or image of a published version.

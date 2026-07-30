@@ -69,6 +69,12 @@ main() {
 	assert_contains .github/workflows/cloudron-catalog-publish.yml 'scripts/publish-cloudron-catalog.sh' || return 1
 	assert_contains .github/workflows/cloudron-catalog-publish.yml ".versions[\$version].manifest.dockerImage" || return 1
 	assert_contains .github/workflows/cloudron-catalog-publish.yml 'persist-credentials: false' || return 1
+	assert_contains .github/workflows/cloudron-catalog-publish.yml "GH_TOKEN: \${{ secrets.CLOUDRON_RELEASE_PAT }}" || return 1
+	assert_contains .github/workflows/cloudron-catalog-publish.yml 'CLOUDRON_RELEASE_PAT is not configured for this repository' || return 1
+	assert_contains .github/workflows/cloudron-catalog-publish.yml 'gh auth setup-git' || return 1
+	assert_contains .github/workflows/cloudron-catalog-publish.yml "chore: publish Cloudron package \${RELEASE_VERSION} [skip ci]" || return 1
+	assert_precedes .github/workflows/cloudron-catalog-publish.yml 'git diff --exit-code' 'gh auth setup-git' || return 1
+	assert_precedes .github/workflows/cloudron-catalog-publish.yml 'gh auth setup-git' 'git push --atomic' || return 1
 	assert_contains .github/workflows/cloudron-catalog-publish.yml 'Verify the build source stayed immutable' || return 1
 	assert_contains .github/workflows/cloudron-catalog-publish.yml 'Verify anonymous registry visibility' || return 1
 	assert_contains .github/workflows/cloudron-catalog-publish.yml 'Verify existing immutable image is anonymously pullable' || return 1
@@ -83,6 +89,7 @@ main() {
 	if grep -Fq 'include-hidden-files: true' "${ROOT_DIR}/.github/workflows/cloudron-catalog-publish.yml"; then
 		fail "Release workflow uploads hidden checkout credentials" || return 1
 	fi
+	[[ "$(grep -Fc 'secrets.CLOUDRON_RELEASE_PAT' "${ROOT_DIR}/.github/workflows/cloudron-catalog-publish.yml")" -eq 1 ]] || fail "Release PAT must be exposed to exactly one publication step" || return 1
 	assert_contains .github/workflows/cloudron-catalog-publish.yml "git diff --exit-code \"\${before_sha}\" -- CloudronManifest.json CHANGELOG CHANGELOG.md" || return 1
 	if grep -Fq -- '--versions-file' "${ROOT_DIR}/scripts/publish-cloudron-catalog.sh"; then
 		fail "Publisher uses unsupported Cloudron CLI --versions-file option" || return 1
