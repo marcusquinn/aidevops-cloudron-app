@@ -21,11 +21,12 @@ tag or digest into the catalog.
 4. The workflow runs `scripts/publish-cloudron-catalog.sh`, which adds the new
    manifest version in testing state, verifies the generated entry and digest,
    promotes that exact version to published, and verifies the final catalog.
-5. The workflow commits only the generated `CloudronVersions.json`, pushes the
-   matching `v<VERSION>` tag, attests the image digest, and creates the GitHub
-   release, but only after an anonymous pull probe resolves that exact digest.
-   Existing published versions are a verified no-op; mutable, unpublished, or
-   conflicting entries fail closed.
+5. The workflow commits only the generated `CloudronVersions.json`, atomically
+   pushes that commit with the matching `v<VERSION>` tag, attests the image
+   digest, and creates the GitHub release, but only after an anonymous pull
+   probe resolves that exact digest. Existing published versions reverify the
+   anonymous image and tagged catalog digest, then reconcile a missing GitHub
+   release. Mutable, unpublished, or conflicting entries fail closed.
 6. For release qualification, test a clean install with
    `cloudron install --versions-url <PUBLIC_VERSIONS_URL> --location worker-test`.
    Also verify upgrade, restart, health checks, and backup/restore.

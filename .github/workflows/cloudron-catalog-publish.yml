@@ -198,9 +198,8 @@ jobs:
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git commit -m "chore: publish Cloudron package ${RELEASE_VERSION}"
-          git push origin HEAD:main
           git tag -a "v${RELEASE_VERSION}" -m "Release v${RELEASE_VERSION}"
-          git push origin "v${RELEASE_VERSION}"
+          git push --atomic origin HEAD:main "v${RELEASE_VERSION}"
 
       - name: Create GitHub release
         env:
@@ -230,3 +229,45 @@ jobs:
         env:
           IMMUTABLE_REF: ${{ needs.preflight.outputs.immutable_ref }}
         run: docker buildx imagetools inspect "${IMMUTABLE_REF}"
+
+  reconcile-existing-release:
+    needs:
+      - preflight
+      - verify-existing
+    if: github.event_name != 'pull_request' && needs.preflight.outputs.publish == 'false'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - name: Check out published source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.preflight.outputs.before_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Verify existing package tag and digest
+        env:
+          IMMUTABLE_REF: ${{ needs.preflight.outputs.immutable_ref }}
+          RELEASE_VERSION: ${{ needs.preflight.outputs.version }}
+        run: |
+          set -euo pipefail
+          tagged_image_ref="$(
+            git show "v${RELEASE_VERSION}:CloudronVersions.json" |
+              jq -r --arg version "${RELEASE_VERSION}" '.versions[$version].manifest.dockerImage'
+          )"
+          test "${tagged_image_ref}" = "${IMMUTABLE_REF}"
+
+      - name: Reconcile GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_VERSION: ${{ needs.preflight.outputs.version }}
+          UPSTREAM_VERSION: ${{ needs.preflight.outputs.upstream_version }}
+        run: |
+          if gh release view "v${RELEASE_VERSION}" >/dev/null 2>&1; then
+            exit 0
+          fi
+          gh release create "v${RELEASE_VERSION}" \
+            --verify-tag \
+            --title "v${RELEASE_VERSION}" \
+            --notes "Cloudron package ${RELEASE_VERSION} for aidevops ${UPSTREAM_VERSION}."
