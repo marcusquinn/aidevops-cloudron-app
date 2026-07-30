@@ -34,6 +34,15 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
+      - name: Require trusted publication source
+        if: github.event_name != 'pull_request'
+        env:
+          ACTUAL_REF: ${{ github.ref }}
+          EXPECTED_REF: refs/heads/main
+        run: |
+          set -euo pipefail
+          test "${ACTUAL_REF}" = "${EXPECTED_REF}"
+
       - name: Validate package
         run: bash ./test/package-test.sh
 
@@ -214,5 +223,10 @@ jobs:
     permissions:
       contents: read
     steps:
-      - name: Report verified no-op
-        run: printf 'Cloudron package %s is already published as %s\n' '${{ needs.preflight.outputs.version }}' '${{ needs.preflight.outputs.immutable_ref }}'
+      - name: Set up Docker Buildx for anonymous verification
+        uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3.11.1
+
+      - name: Verify existing immutable image is anonymously pullable
+        env:
+          IMMUTABLE_REF: ${{ needs.preflight.outputs.immutable_ref }}
+        run: docker buildx imagetools inspect "${IMMUTABLE_REF}"
