@@ -1,9 +1,9 @@
 # Cloudron community publishing
 
-`CloudronVersions.json` is initialized but intentionally contains no release.
-Publishing requires a registry-hosted image built by the Cloudron CLI and
-separate operator authorization. Never hand-write an image tag or digest into
-the catalog.
+`CloudronVersions.json` is the public package catalog. Merging a completed
+package update to `main` is standing authorization for the managed publication
+workflow to build and publish that manifest version. Never hand-write an image
+tag or digest into the catalog.
 
 ## Release workflow
 
@@ -12,19 +12,46 @@ the catalog.
 2. Confirm `logo.png` is a 256×256 PNG and `media/hero.png` is a
    privacy-reviewed 3:1 image. Verify every `iconUrl` and `mediaLinks` URL
    returns an image over public HTTPS.
-3. Configure an operator-owned registry and run `cloudron build`. Use
-   `cloudron build info` to verify the recorded repository and image.
-4. Add the candidate with `cloudron versions add --state testing`, host the
-   catalog at the intended public URL, and run `cloudron versions list`.
-5. Test a clean install with
+3. Merge the completed package update to `main`. The
+   `cloudron-catalog-publish.yml` workflow validates the package, builds the
+   amd64 image, pushes it to
+   `ghcr.io/marcusquinn/aidevops-cloudron-worker`, and resolves the immutable
+   registry digest. The OCI source label links the package to this public
+   repository so Cloudron can pull it anonymously.
+4. The workflow runs `scripts/publish-cloudron-catalog.sh`, which adds the new
+   manifest version in testing state, verifies the generated entry and digest,
+   promotes that exact version to published, and verifies the final catalog.
+5. The workflow commits only the generated `CloudronVersions.json`, atomically
+   pushes that commit with the matching `v<VERSION>` tag, attests the image
+   digest, and creates the GitHub release, but only after an anonymous pull
+   probe resolves that exact digest. Existing published versions reverify the
+   anonymous image and tagged catalog digest, then reconcile a missing GitHub
+   release. Mutable, unpublished, or conflicting entries fail closed.
+6. For release qualification, test a clean install with
    `cloudron install --versions-url <PUBLIC_VERSIONS_URL> --location worker-test`.
    Also verify upgrade, restart, health checks, and backup/restore.
-6. Promote only the tested package with
-   `cloudron versions update --version=<VERSION> --state=published`, then
-   publish the updated catalog.
 7. Optionally sign in to [Cloudron Community Apps](https://ca.cloudron.io), add
    the same versions URL, and verify the imported icon, screenshot/hero,
    description, changelog, and install URL.
+
+The workflow is the only supported catalog writer. A merge that does not bump
+`CloudronManifest.json` is a verified no-op and does not create another release.
+
+## Release credential
+
+The protected `main` branch requires the repository secret
+`CLOUDRON_RELEASE_PAT`. Use a separate fine-grained PAT for this repository,
+owned by a repository administrator and limited to this repository with only
+`Contents: Read and write`. Do not grant workflow permissions or reuse the
+credential in another repository. The workflow exposes it only to the final
+validated catalog commit and atomic tag push; GHCR, attestations, and GitHub
+release operations continue to use `GITHUB_TOKEN`. The generated catalog commit
+includes `[skip ci]` so its PAT-authenticated branch and tag push cannot launch
+duplicate publication workflows.
+
+If the PAT is absent, expired, or revoked, publication fails before the push
+without changing the catalog or tag. Rotate the repository secret and rerun the
+workflow from `main`.
 
 Published entries are append-only. For a critical bad release, run
 `cloudron versions revoke`, bump the package version, rebuild, and add a new

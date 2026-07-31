@@ -1,0 +1,282 @@
+name: Publish Cloudron Catalog
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: cloudron-catalog-publish
+  cancel-in-progress: false
+
+env:
+  IMAGE_REPOSITORY: ghcr.io/marcusquinn/aidevops-cloudron-worker
+  CLOUDRON_CLI_VERSION: 8.2.6
+  CLOUDRON_CLI_INTEGRITY: sha512-LHd+4u6pJxDtHX1JuVuWqrUuTbkDu+iH4jjNWW6JgB4+iDLusp08rpt6gifTFPbQjbCZHhnD8LbAGzM1NzDCXw==
+
+jobs:
+  preflight:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    outputs:
+      publish: ${{ steps.decide.outputs.publish }}
+      version: ${{ steps.manifest.outputs.version }}
+      upstream_version: ${{ steps.manifest.outputs.upstream_version }}
+      before_sha: ${{ steps.manifest.outputs.before_sha }}
+      immutable_ref: ${{ steps.existing.outputs.immutable_ref }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Require trusted publication source
+        if: github.event_name != 'pull_request'
+        env:
+          ACTUAL_REF: ${{ github.ref }}
+          EXPECTED_REF: refs/heads/main
+        run: |
+          set -euo pipefail
+          test "${ACTUAL_REF}" = "${EXPECTED_REF}"
+
+      - name: Validate package
+        run: bash ./test/package-test.sh
+
+      - name: Validate catalog publisher
+        run: bash ./test/publish-catalog-test.sh
+
+      - name: Read manifest metadata
+        id: manifest
+        run: |
+          version="$(jq -r '.version' CloudronManifest.json)"
+          upstream_version="$(jq -r '.upstreamVersion' CloudronManifest.json)"
+          test -n "${version}" && test "${version}" != "null"
+          test -n "${upstream_version}" && test "${upstream_version}" != "null"
+          printf 'version=%s\n' "${version}" >> "${GITHUB_OUTPUT}"
+          printf 'upstream_version=%s\n' "${upstream_version}" >> "${GITHUB_OUTPUT}"
+          printf 'before_sha=%s\n' "${GITHUB_SHA}" >> "${GITHUB_OUTPUT}"
+
+      - name: Decide whether this version needs publication
+        id: decide
+        run: |
+          version="${{ steps.manifest.outputs.version }}"
+          if jq -e --arg version "${version}" '.versions[$version] != null' CloudronVersions.json >/dev/null; then
+            printf 'publish=false\n' >> "${GITHUB_OUTPUT}"
+          else
+            printf 'publish=true\n' >> "${GITHUB_OUTPUT}"
+          fi
+
+      - name: Validate an existing release entry
+        id: existing
+        if: steps.decide.outputs.publish == 'false'
+        run: |
+          version="${{ steps.manifest.outputs.version }}"
+          image_ref="$(jq -r --arg version "${version}" '.versions[$version].manifest.dockerImage' CloudronVersions.json)"
+          publish_state="$(jq -r --arg version "${version}" '.versions[$version].publishState' CloudronVersions.json)"
+          test "${publish_state}" = "published"
+          case "${image_ref}" in
+            *@sha256:*) ;;
+            *) printf 'Existing release %s is not pinned to an immutable digest\n' "${version}" >&2; exit 1 ;;
+          esac
+          printf 'immutable_ref=%s\n' "${image_ref}" >> "${GITHUB_OUTPUT}"
+
+  build:
+    needs: preflight
+    if: github.event_name != 'pull_request' && needs.preflight.outputs.publish == 'true'
+    runs-on: ubuntu-24.04
+    permissions:
+      attestations: write
+      contents: read
+      packages: write
+      id-token: write
+    outputs:
+      digest: ${{ steps.build.outputs.digest }}
+      image_ref: ${{ steps.image.outputs.image_ref }}
+    steps:
+      - name: Check out the verified revision
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.preflight.outputs.before_sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Verify the build source stayed immutable
+        run: test "$(git rev-parse HEAD)" = "${{ needs.preflight.outputs.before_sha }}"
+
+      - name: Log in to GHCR
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3.11.1
+
+      - name: Build and push amd64 image
+        id: build
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
+        with:
+          context: .
+          platforms: linux/amd64
+          push: true
+          tags: ${{ env.IMAGE_REPOSITORY }}:${{ needs.preflight.outputs.version }}
+
+      - name: Record immutable image reference
+        id: image
+        run: |
+          digest="${{ steps.build.outputs.digest }}"
+          test -n "${digest}"
+          printf 'image_ref=%s@%s\n' "${IMAGE_REPOSITORY}" "${digest}" >> "${GITHUB_OUTPUT}"
+
+      - name: Attest image provenance
+        uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v2.4.0
+        with:
+          subject-name: ${{ env.IMAGE_REPOSITORY }}
+          subject-digest: ${{ steps.build.outputs.digest }}
+          push-to-registry: true
+
+  publish:
+    needs:
+      - preflight
+      - build
+    if: github.event_name != 'pull_request' && needs.preflight.outputs.publish == 'true'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - name: Check out the verified revision
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.preflight.outputs.before_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Verify the release source stayed immutable
+        run: test "$(git rev-parse HEAD)" = "${{ needs.preflight.outputs.before_sha }}"
+
+      - name: Install pinned Cloudron CLI
+        run: |
+          registry_integrity="$(npm view "cloudron@${CLOUDRON_CLI_VERSION}" dist.integrity)"
+          test "${registry_integrity}" = "${CLOUDRON_CLI_INTEGRITY}"
+          npm install --global --ignore-scripts "cloudron@${CLOUDRON_CLI_VERSION}"
+          test "$(cloudron --version)" = "${CLOUDRON_CLI_VERSION}"
+
+      - name: Set up Docker Buildx for anonymous verification
+        uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3.11.1
+
+      - name: Verify anonymous registry visibility
+        env:
+          EXPECTED_IMAGE_REF: ${{ needs.build.outputs.image_ref }}
+        run: |
+          for attempt in $(seq 1 12); do
+            if docker buildx imagetools inspect "${EXPECTED_IMAGE_REF}" >/dev/null 2>&1; then
+              exit 0
+            fi
+            sleep $((attempt * 5))
+          done
+          printf 'Timed out waiting for anonymous access to %s\n' "${EXPECTED_IMAGE_REF}" >&2
+          exit 1
+
+      - name: Publish and verify catalog entry
+        env:
+          EXPECTED_IMAGE_REF: ${{ needs.build.outputs.image_ref }}
+          EXPECTED_VERSION: ${{ needs.preflight.outputs.version }}
+        run: bash scripts/publish-cloudron-catalog.sh CloudronVersions.json "${EXPECTED_IMAGE_REF}" "${EXPECTED_VERSION}"
+
+      - name: Commit generated catalog
+        env:
+          GH_TOKEN: ${{ secrets.CLOUDRON_RELEASE_PAT }}
+          RELEASE_VERSION: ${{ needs.preflight.outputs.version }}
+        run: |
+          if [[ -z "${GH_TOKEN}" ]]; then
+            printf 'CLOUDRON_RELEASE_PAT is not configured for this repository\n' >&2
+            exit 1
+          fi
+          before_sha="${{ needs.preflight.outputs.before_sha }}"
+          git diff --exit-code "${before_sha}" -- CloudronManifest.json CHANGELOG CHANGELOG.md
+          git add CloudronVersions.json
+          test -n "$(git diff --cached --name-only)"
+          test "$(git diff --cached --name-only)" = "CloudronVersions.json"
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git commit -m "chore: publish Cloudron package ${RELEASE_VERSION} [skip ci]"
+          git tag -a "v${RELEASE_VERSION}" -m "Release v${RELEASE_VERSION}"
+          # aidevops:trust-boundary — expose the repository-scoped admin credential only after validation.
+          gh auth setup-git
+          git push --atomic origin HEAD:main "v${RELEASE_VERSION}"
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_VERSION: ${{ needs.preflight.outputs.version }}
+          UPSTREAM_VERSION: ${{ needs.preflight.outputs.upstream_version }}
+        run: |
+          if gh release view "v${RELEASE_VERSION}" >/dev/null 2>&1; then
+            exit 0
+          fi
+          gh release create "v${RELEASE_VERSION}" \
+            --verify-tag \
+            --title "v${RELEASE_VERSION}" \
+            --notes "Cloudron package ${RELEASE_VERSION} for aidevops ${UPSTREAM_VERSION}."
+
+  verify-existing:
+    needs: preflight
+    if: needs.preflight.outputs.publish == 'false'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - name: Set up Docker Buildx for anonymous verification
+        uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3.11.1
+
+      - name: Verify existing immutable image is anonymously pullable
+        env:
+          IMMUTABLE_REF: ${{ needs.preflight.outputs.immutable_ref }}
+        run: docker buildx imagetools inspect "${IMMUTABLE_REF}"
+
+  reconcile-existing-release:
+    needs:
+      - preflight
+      - verify-existing
+    if: github.event_name != 'pull_request' && needs.preflight.outputs.publish == 'false'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - name: Check out published source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.preflight.outputs.before_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Verify existing package tag and digest
+        env:
+          IMMUTABLE_REF: ${{ needs.preflight.outputs.immutable_ref }}
+          RELEASE_VERSION: ${{ needs.preflight.outputs.version }}
+        run: |
+          set -euo pipefail
+          tagged_image_ref="$(
+            git show "v${RELEASE_VERSION}:CloudronVersions.json" |
+              jq -r --arg version "${RELEASE_VERSION}" '.versions[$version].manifest.dockerImage'
+          )"
+          test "${tagged_image_ref}" = "${IMMUTABLE_REF}"
+
+      - name: Reconcile GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_VERSION: ${{ needs.preflight.outputs.version }}
+          UPSTREAM_VERSION: ${{ needs.preflight.outputs.upstream_version }}
+        run: |
+          if gh release view "v${RELEASE_VERSION}" >/dev/null 2>&1; then
+            exit 0
+          fi
+          gh release create "v${RELEASE_VERSION}" \
+            --verify-tag \
+            --title "v${RELEASE_VERSION}" \
+            --notes "Cloudron package ${RELEASE_VERSION} for aidevops ${UPSTREAM_VERSION}."

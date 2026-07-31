@@ -69,6 +69,8 @@ Compatible with [todo-md](https://github.com/todo-md/todo-md), [todomd](https://
 
 - [ ] t011 Repair historical catalog entry for Cloudron 9.2 #bug ref:GH#66
 
+- [ ] t012 Automate Cloudron releases after package updates merge #feat #priority:high ref:GH#68
+
 ## In Progress
 
 <!--TOON:in_progress[0]{id,desc,owner,tags,est,risk,logged,started,status}:
