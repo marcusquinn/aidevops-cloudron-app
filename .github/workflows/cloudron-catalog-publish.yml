@@ -147,7 +147,9 @@ jobs:
     if: github.event_name != 'pull_request' && needs.preflight.outputs.publish == 'true'
     runs-on: ubuntu-24.04
     permissions:
+      attestations: write
       contents: write
+      id-token: write
     steps:
       - name: Check out the verified revision
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -187,6 +189,22 @@ jobs:
           EXPECTED_IMAGE_REF: ${{ needs.build.outputs.image_ref }}
           EXPECTED_VERSION: ${{ needs.preflight.outputs.version }}
         run: bash scripts/publish-cloudron-catalog.sh CloudronVersions.json "${EXPECTED_IMAGE_REF}" "${EXPECTED_VERSION}"
+
+      - name: Attest generated Cloudron catalog
+        id: attest-catalog
+        uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v2.4.0
+        with:
+          subject-path: CloudronVersions.json
+
+      - name: Verify generated Cloudron catalog provenance
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh attestation verify CloudronVersions.json \
+            --bundle "${{ steps.attest-catalog.outputs.bundle-path }}" \
+            --repo "${GITHUB_REPOSITORY}" \
+            --signer-workflow "${GITHUB_REPOSITORY}/.github/workflows/cloudron-catalog-publish.yml" \
+            --source-ref refs/heads/main
 
       - name: Commit generated catalog
         env:
@@ -246,7 +264,9 @@ jobs:
     if: github.event_name != 'pull_request' && needs.preflight.outputs.publish == 'false'
     runs-on: ubuntu-24.04
     permissions:
+      attestations: write
       contents: write
+      id-token: write
     steps:
       - name: Check out published source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -266,6 +286,22 @@ jobs:
               jq -r --arg version "${RELEASE_VERSION}" '.versions[$version].manifest.dockerImage'
           )"
           test "${tagged_image_ref}" = "${IMMUTABLE_REF}"
+
+      - name: Attest existing Cloudron catalog
+        id: attest-catalog
+        uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v2.4.0
+        with:
+          subject-path: CloudronVersions.json
+
+      - name: Verify existing Cloudron catalog provenance
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh attestation verify CloudronVersions.json \
+            --bundle "${{ steps.attest-catalog.outputs.bundle-path }}" \
+            --repo "${GITHUB_REPOSITORY}" \
+            --signer-workflow "${GITHUB_REPOSITORY}/.github/workflows/cloudron-catalog-publish.yml" \
+            --source-ref refs/heads/main
 
       - name: Reconcile GitHub release
         env:

@@ -64,6 +64,11 @@ main() {
 	assert_contains .github/workflows/cloudron-catalog-publish.yml 'Require trusted publication source' || return 1
 	assert_contains .github/workflows/cloudron-catalog-publish.yml 'EXPECTED_REF: refs/heads/main' || return 1
 	assert_contains .github/workflows/cloudron-catalog-publish.yml 'attestations: write' || return 1
+	[[ "$(grep -Fc 'subject-path: CloudronVersions.json' "${ROOT_DIR}/.github/workflows/cloudron-catalog-publish.yml")" -eq 2 ]] || fail "Both catalog paths must attest CloudronVersions.json" || return 1
+	[[ "$(grep -Fc 'gh attestation verify CloudronVersions.json' "${ROOT_DIR}/.github/workflows/cloudron-catalog-publish.yml")" -eq 2 ]] || fail "Both catalog paths must verify CloudronVersions.json provenance" || return 1
+	assert_contains .github/workflows/cloudron-catalog-publish.yml "--bundle \"\${{ steps.attest-catalog.outputs.bundle-path }}\"" || return 1
+	assert_contains .github/workflows/cloudron-catalog-publish.yml "--signer-workflow \"\${GITHUB_REPOSITORY}/.github/workflows/cloudron-catalog-publish.yml\"" || return 1
+	[[ "$(grep -Fc -- '--source-ref refs/heads/main' "${ROOT_DIR}/.github/workflows/cloudron-catalog-publish.yml")" -eq 2 ]] || fail "Both catalog verifications must require the main source ref" || return 1
 	assert_contains .github/workflows/cloudron-catalog-publish.yml 'CLOUDRON_CLI_INTEGRITY: sha512-LHd+4u6pJxDtHX1JuVuWqrUuTbkDu+iH4jjNWW6JgB4+iDLusp08rpt6gifTFPbQjbCZHhnD8LbAGzM1NzDCXw==' || return 1
 	assert_precedes .github/workflows/cloudron-catalog-publish.yml 'registry_integrity=' 'npm install --global --ignore-scripts' || return 1
 	assert_contains .github/workflows/cloudron-catalog-publish.yml 'scripts/publish-cloudron-catalog.sh' || return 1
