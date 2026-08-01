@@ -38,7 +38,9 @@ tag or digest into the catalog.
    description, changelog, and install URL.
 
 The workflow is the only supported catalog writer. A merge that does not bump
-`CloudronManifest.json` is a verified no-op and does not create another release.
+`CloudronManifest.json` is a verified catalog no-op: the catalog remains
+unchanged, although the workflow may reconcile a missing GitHub release for the
+existing published version.
 
 GitHub Actions OIDC supplies the short-lived identity used for the image and
 catalog attestations, so publication requires no stored signing key. These
