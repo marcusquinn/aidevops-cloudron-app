@@ -21,12 +21,15 @@ tag or digest into the catalog.
 4. The workflow runs `scripts/publish-cloudron-catalog.sh`, which adds the new
    manifest version in testing state, verifies the generated entry and digest,
    promotes that exact version to published, and verifies the final catalog.
-5. The workflow commits only the generated `CloudronVersions.json`, atomically
-   pushes that commit with the matching `v<VERSION>` tag, attests the image
-   digest, and creates the GitHub release, but only after an anonymous pull
-   probe resolves that exact digest. Existing published versions reverify the
-   anonymous image and tagged catalog digest, then reconcile a missing GitHub
-   release. Mutable, unpublished, or conflicting entries fail closed.
+5. The workflow creates Sigstore keyless provenance for both the immutable image
+   digest and the exact generated `CloudronVersions.json`. It verifies the
+   catalog attestation bundle against this repository, the publishing workflow,
+   and the `main` source ref before committing only the generated catalog,
+   atomically pushing that commit with the matching `v<VERSION>` tag, and
+   creating the GitHub release. Existing published versions reverify the
+   anonymous image and tagged catalog digest, attest and verify the current
+   catalog without a version bump, then reconcile a missing GitHub release.
+   Mutable, unpublished, or conflicting entries fail closed.
 6. For release qualification, test a clean install with
    `cloudron install --versions-url <PUBLIC_VERSIONS_URL> --location worker-test`.
    Also verify upgrade, restart, health checks, and backup/restore.
@@ -36,6 +39,12 @@ tag or digest into the catalog.
 
 The workflow is the only supported catalog writer. A merge that does not bump
 `CloudronManifest.json` is a verified no-op and does not create another release.
+
+GitHub Actions OIDC supplies the short-lived identity used for the image and
+catalog attestations, so publication requires no stored signing key. These
+attestations provide independently verifiable provenance, but Cloudron does not
+currently enforce Sigstore provenance when it imports a catalog or installs an
+image.
 
 ## Release credential
 

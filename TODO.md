@@ -71,6 +71,8 @@ Compatible with [todo-md](https://github.com/todo-md/todo-md), [todomd](https://
 
 - [ ] t012 Automate Cloudron releases after package updates merge #feat #priority:high ref:GH#68
 
+- [ ] t013 Add keyless provenance for Cloudron catalogs ref:GH#72
+
 ## In Progress
 
 <!--TOON:in_progress[0]{id,desc,owner,tags,est,risk,logged,started,status}:
