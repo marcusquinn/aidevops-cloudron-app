@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.13] - 2026-08-08
+
+### Changed
+
+- Updated and pinned the bundled aidevops CLI to `3.32.236`.
+- Updated the final Cloudron base image to `5.1.0`.
+
 ## [0.1.12] - 2026-08-04
 
 ### Changed
