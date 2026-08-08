@@ -40,7 +40,9 @@ main() {
 	[[ -f "${ROOT_DIR}/media/hero.png" ]] || fail "media/hero.png is missing" || return 1
 	jq -e '.stable == true and (.versions | type == "object")' "${ROOT_DIR}/CloudronVersions.json" >/dev/null || fail "Version catalog contract failed" || return 1
 	jq -e '[.versions[].manifest | has("packageUrl")] | all(. == false)' "${ROOT_DIR}/CloudronVersions.json" >/dev/null || fail "Historical catalog entries must not use Cloudron-10-only packageUrl" || return 1
+	assert_contains CHANGELOG '[0.1.12]' || return 1
 	assert_contains CHANGELOG '* Update the bundled aidevops CLI to 3.32.220.' || return 1
+	assert_contains CHANGELOG.md '## [0.1.12]' || return 1
 	assert_contains CHANGELOG.md "- Updated and pinned the bundled aidevops CLI to \`3.32.220\`." || return 1
 	assert_contains PUBLISHING.md 'is standing authorization for the managed publication' || return 1
 	assert_contains PUBLISHING.md 'ghcr.io/marcusquinn/aidevops-cloudron-worker' || return 1
