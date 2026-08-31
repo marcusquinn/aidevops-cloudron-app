@@ -560,6 +560,46 @@
             "creationDate": "Sun, 30 Aug 2026 03:54:44 GMT",
             "ts": "Sun, 30 Aug 2026 03:54:45 GMT",
             "publishState": "published"
+        },
+        "0.1.19": {
+            "manifest": {
+                "id": "sh.aidevops.worker",
+                "title": "AI DevOps Worker",
+                "author": "Marcus Quinn <marcus@marcusquinn.com>",
+                "description": "Always-on remote worker node for AI DevOps. Runs headless OpenCode sessions, accepts task dispatches via HTTP API, and integrates with the aidevops supervisor pulse for autonomous code generation, PR creation, and multi-node orchestration.",
+                "tagline": "Remote AI worker node for autonomous code generation",
+                "version": "0.1.19",
+                "upstreamVersion": "3.32.296",
+                "healthCheckPath": "/health",
+                "httpPort": 3000,
+                "manifestVersion": 2,
+                "website": "https://aidevops.sh",
+                "contactEmail": "marcus@marcusquinn.com",
+                "icon": "file://logo.png",
+                "documentationUrl": "https://github.com/marcusquinn/aidevops-cloudron-app",
+                "minBoxVersion": "9.1.0",
+                "memoryLimit": 2147483648,
+                "addons": {
+                    "localstorage": {}
+                },
+                "tcpPorts": {},
+                "iconUrl": "https://raw.githubusercontent.com/marcusquinn/aidevops-cloudron-app/main/logo.png",
+                "packagerName": "Marcus Quinn",
+                "packagerUrl": "https://github.com/marcusquinn",
+                "mediaLinks": [
+                    "https://aidevops.sh/og-image.png?v=3"
+                ],
+                "tags": [
+                    "ai",
+                    "automation",
+                    "developer-tools"
+                ],
+                "changelog": "* Update the bundled aidevops CLI to 3.32.296.\n",
+                "dockerImage": "ghcr.io/marcusquinn/aidevops-cloudron-worker@sha256:7e8a792f8ecd8732c3bd2e589b797edbc3b5467a1c9474d1de91ffc73d958da3"
+            },
+            "creationDate": "Mon, 31 Aug 2026 03:44:29 GMT",
+            "ts": "Mon, 31 Aug 2026 03:44:29 GMT",
+            "publishState": "published"
         }
     }
 }
