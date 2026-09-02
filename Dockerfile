@@ -35,7 +35,7 @@ RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
 # OpenCode CLI (from GitHub releases) + aidevops CLI (from npm)
 # ============================================
 ARG OPENCODE_VERSION=1.18.4
-ARG AIDEVOPS_VERSION=3.32.296
+ARG AIDEVOPS_VERSION=3.32.299
 
 RUN curl -fsSL "https://github.com/anomalyco/opencode/releases/download/v${OPENCODE_VERSION}/opencode-linux-x64.tar.gz" \
     | tar -xz -C /usr/local/bin \
