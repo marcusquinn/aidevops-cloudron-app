@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.22] - 2026-09-13
+
+### Changed
+
+- Updated and pinned the bundled aidevops CLI to `3.32.366`.
+
 ## [0.1.21] - 2026-09-06
 
 ### Changed
