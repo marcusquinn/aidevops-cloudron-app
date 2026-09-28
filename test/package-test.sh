@@ -47,7 +47,7 @@ main() {
 	assert_contains PUBLISHING.md 'is standing authorization for the managed publication' || return 1
 	assert_contains PUBLISHING.md 'ghcr.io/marcusquinn/aidevops-cloudron-worker' || return 1
 	jq -e '.versions["0.1.3"].publishState == "published"' "${ROOT_DIR}/CloudronVersions.json" >/dev/null || fail "Published catalog state contract failed" || return 1
-	assert_contains Dockerfile 'cloudron/base:5.1.0@sha256:1c0666c9abe9e2090d33686826d4e97769b799124573118d41e0d7485135748e' || return 1
+	assert_contains Dockerfile 'cloudron/base:6.0.0@sha256:9bed4c8fa880645f8e669041ee28febe941481d00e9445e3e5a5483cb541d09b' || return 1
 	assert_contains Dockerfile 'LABEL org.opencontainers.image.source="https://github.com/marcusquinn/aidevops-cloudron-app"' || return 1
 	assert_contains Dockerfile '    ripgrep' || return 1
 	assert_contains Dockerfile 'ARG OPENCODE_VERSION=1.18.4' || return 1
