@@ -139,6 +139,8 @@ jobs:
           subject-name: ${{ env.IMAGE_REPOSITORY }}
           subject-digest: ${{ steps.build.outputs.digest }}
           push-to-registry: true
+          # Storage records require an organization-owned repo; keep provenance only.
+          create-storage-record: false
 
   publish:
     needs:
