@@ -49,6 +49,33 @@ jobs:
       - name: Validate catalog publisher
         run: bash ./test/publish-catalog-test.sh
 
+      - name: Install pinned Cloudron CLI
+        run: |
+          preflight_integrity="$(npm view "cloudron@${CLOUDRON_CLI_VERSION}" dist.integrity)"
+          test "${preflight_integrity}" = "${CLOUDRON_CLI_INTEGRITY}"
+          npm install --ignore-scripts --global "cloudron@${CLOUDRON_CLI_VERSION}"
+          test "$(cloudron --version)" = "${CLOUDRON_CLI_VERSION}"
+
+      - name: Dry-run catalog entry with the real Cloudron CLI
+        # The publisher test stubs the CLI. This runs the real manifest and
+        # file:// reference parsing on a scratch copy of the catalog.
+        run: |
+          set -euo pipefail
+          scratch="${RUNNER_TEMP}/catalog-dry-run"
+          mkdir -p "${scratch}"
+          cp CloudronManifest.json CloudronVersions.json "${scratch}/"
+          jq -r '.. | strings | select(startswith("file://")) | ltrimstr("file://")' CloudronManifest.json |
+            while IFS= read -r referenced; do cp "${referenced}" "${scratch}/"; done
+          cd "${scratch}"
+          version="$(jq -r '.version' CloudronManifest.json)"
+          if jq -e --arg version "${version}" '.versions[$version] != null' CloudronVersions.json >/dev/null; then
+            printf 'Version %s is already published; skipping dry run\n' "${version}"
+            exit 0
+          fi
+          cloudron versions add --state testing --image "registry.invalid/dry-run@sha256:$(printf '0%.0s' $(seq 64))"
+          cloudron versions verify
+          jq -e --arg version "${version}" '.versions[$version].manifest.changelog | length > 0' CloudronVersions.json >/dev/null
+
       - name: Read manifest metadata
         id: manifest
         run: |

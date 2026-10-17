@@ -433,12 +433,21 @@ aidevops-cloudron-app/
 
 ## Updating
 
+Catalog installs made with `cloudron install --versions-url <PUBLIC_VERSIONS_URL>`
+or the same community-app catalog URL in the Cloudron dashboard update from the
+dashboard when a new catalog version is published. See [PUBLISHING.md](PUBLISHING.md)
+for the catalog installation and release workflow.
+
+The following rebuild is only for source-built development installs. Running it
+on a catalog install replaces the published image with a local build instead of
+updating from the catalog:
+
 ```bash
 # Pull latest changes
 cd aidevops-cloudron-app
 git pull
 
-# Rebuild and update
+# Rebuild and update the source-built development install only
 cloudron build --local --no-push && cloudron update --app worker
 ```
 
