@@ -6,7 +6,8 @@
 
 - **Build**: `cloudron build --local --no-push`
 - **Test**: `cloudron install --location test-worker && cloudron logs -f --app test-worker`
-- **Deploy**: `cloudron build --local --no-push && cloudron update --app worker`
+- **Dev rebuild (source install only)**:
+  `cloudron build --local --no-push && cloudron update --app worker`
 - **Debug**: `cloudron exec --app worker`
 
 ## Project Overview
