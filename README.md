@@ -1,5 +1,16 @@
 # AI DevOps Worker — Cloudron App
 
+<!-- aidevops:badges:start -->
+<!-- managed by aidevops badges; edit the template, not this block -->
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://spdx.org/licenses/MIT.html)
+[![Latest release](https://img.shields.io/badge/release-latest-blue.svg)](https://github.com/marcusquinn/aidevops-cloudron-app/releases/latest)
+
+[![Lines of code](docs/metrics/badges/loc.svg)](docs/metrics/repo-metrics.md)
+[![Dependencies](docs/metrics/badges/dependencies.svg)](docs/metrics/repo-metrics.md)
+
+[![Languages by lines of code](docs/metrics/badges/languages.svg)](docs/metrics/repo-metrics.md)
+<!-- aidevops:badges:end -->
+
 Always-on remote worker node for [aidevops](https://aidevops.sh). Runs headless OpenCode sessions inside a Cloudron-managed Docker container, accepts task dispatches via HTTP API, and integrates with the aidevops supervisor pulse for autonomous code generation and PR creation.
 
 ## What This Does
