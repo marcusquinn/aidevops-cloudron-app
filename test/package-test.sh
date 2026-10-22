@@ -33,7 +33,7 @@ assert_precedes() {
 }
 
 main() {
-	jq -e '.manifestVersion == 2 and .version == "0.1.37" and .upstreamVersion == "3.39.53" and .minBoxVersion == "9.1.0" and .iconUrl != "" and .packagerName != "" and .packagerUrl == "https://github.com/marcusquinn" and (has("packageUrl") | not) and (.mediaLinks | length) > 0 and .changelog == "file://CHANGELOG"' \
+	jq -e '.manifestVersion == 2 and .version == "0.1.38" and .upstreamVersion == "3.39.55" and .minBoxVersion == "9.1.0" and .iconUrl != "" and .packagerName != "" and .packagerUrl == "https://github.com/marcusquinn" and (has("packageUrl") | not) and (.mediaLinks | length) > 0 and .changelog == "file://CHANGELOG"' \
 		"${ROOT_DIR}/CloudronManifest.json" >/dev/null || fail "Manifest version contract failed" || return 1
 	[[ -f "${ROOT_DIR}/CloudronVersions.json" ]] || fail "CloudronVersions.json is missing" || return 1
 	[[ -f "${ROOT_DIR}/PUBLISHING.md" ]] || fail "PUBLISHING.md is missing" || return 1
@@ -41,17 +41,17 @@ main() {
 	jq -e '.stable == true and (.versions | type == "object")' "${ROOT_DIR}/CloudronVersions.json" >/dev/null || fail "Version catalog contract failed" || return 1
 	jq -e '[.versions[].manifest | has("packageUrl")] | all(. == false)' "${ROOT_DIR}/CloudronVersions.json" >/dev/null || fail "Historical catalog entries must not use Cloudron-10-only packageUrl" || return 1
 	assert_contains CHANGELOG '[0.1.37]' || return 1
-	assert_contains CHANGELOG '* Update the bundled aidevops CLI to 3.39.53.' || return 1
+	assert_contains CHANGELOG '* Update the bundled aidevops CLI to 3.39.55.' || return 1
 	assert_contains CHANGELOG.md '## [0.1.37]' || return 1
-	assert_contains CHANGELOG.md "- Updated and pinned the bundled aidevops CLI to \`3.39.53\`." || return 1
+	assert_contains CHANGELOG.md "- Updated and pinned the bundled aidevops CLI to \`3.39.55\`." || return 1
 	assert_contains PUBLISHING.md 'is standing authorization for the managed publication' || return 1
 	assert_contains PUBLISHING.md 'ghcr.io/marcusquinn/aidevops-cloudron-worker' || return 1
 	jq -e '.versions["0.1.3"].publishState == "published"' "${ROOT_DIR}/CloudronVersions.json" >/dev/null || fail "Published catalog state contract failed" || return 1
-	assert_contains Dockerfile 'cloudron/base:6.0.0@sha256:9bed4c8fa880645f8e669041ee28febe941481d00e9445e3e5a5483cb541d09b' || return 1
+	assert_contains Dockerfile 'cloudron/base:6.0.1@sha256:7b1e729960c3ca312d26e886917ba89483241bba0219ff292858e10d9d5768ee' || return 1
 	assert_contains Dockerfile 'LABEL org.opencontainers.image.source="https://github.com/marcusquinn/aidevops-cloudron-app"' || return 1
 	assert_contains Dockerfile '    ripgrep' || return 1
 	assert_contains Dockerfile 'ARG OPENCODE_VERSION=1.18.4' || return 1
-	assert_contains Dockerfile 'ARG AIDEVOPS_VERSION=3.39.53' || return 1
+	assert_contains Dockerfile 'ARG AIDEVOPS_VERSION=3.39.55' || return 1
 	assert_contains Dockerfile "releases/download/v\${OPENCODE_VERSION}/opencode-linux-x64.tar.gz" || return 1
 	assert_contains Dockerfile "npm install -g \"aidevops@\${AIDEVOPS_VERSION}\"" || return 1
 	if grep -Eq '/releases/latest([/?#]|$)' "${ROOT_DIR}/Dockerfile"; then

@@ -1,4 +1,4 @@
-FROM cloudron/base:6.0.0@sha256:9bed4c8fa880645f8e669041ee28febe941481d00e9445e3e5a5483cb541d09b
+FROM cloudron/base:6.0.1@sha256:7b1e729960c3ca312d26e886917ba89483241bba0219ff292858e10d9d5768ee
 
 LABEL org.opencontainers.image.source="https://github.com/marcusquinn/aidevops-cloudron-app"
 
@@ -35,7 +35,7 @@ RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
 # OpenCode CLI (from GitHub releases) + aidevops CLI (from npm)
 # ============================================
 ARG OPENCODE_VERSION=1.18.4
-ARG AIDEVOPS_VERSION=3.39.53
+ARG AIDEVOPS_VERSION=3.39.55
 
 RUN curl -fsSL "https://github.com/anomalyco/opencode/releases/download/v${OPENCODE_VERSION}/opencode-linux-x64.tar.gz" \
     | tar -xz -C /usr/local/bin \
