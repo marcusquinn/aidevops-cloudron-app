@@ -12,6 +12,19 @@ tag or digest into the catalog.
 2. Confirm `logo.png` is a 256×256 PNG and `media/hero.png` is a
    privacy-reviewed 3:1 image. Verify every `iconUrl` and `mediaLinks` URL
    returns an image over public HTTPS.
+   Before merging or qualifying the release, run a non-publishing installation
+   check from the package directory:
+
+   ```bash
+   docker build --platform linux/amd64 --progress plain --tag aidevops-cloudron-qualification:local .
+   ```
+
+   Use the Dockerfile's pinned base image and default `AIDEVOPS_VERSION`; do not
+   override the version under qualification. A successful build exercises the
+   actual pinned CLI installation. Static checks in `test/package-test.sh` alone
+   do not qualify that installation. Record the source commit and build result;
+   a failed installation blocks release qualification. This command does not
+   push an image, publish a catalog, or install an app on a Cloudron server.
 3. Merge the completed package update to `main`. The
    `cloudron-catalog-publish.yml` workflow validates the package, builds the
    amd64 image, pushes it to
