@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Pinned npm to `11.21.1` before installing aidevops to avoid the npm 10.x Arborist `edgesOut` crash during Docker qualification, preserving the aidevops postinstall script.
+
 ## [0.1.38] - 2026-10-22
 
 ### Changed
