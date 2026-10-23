@@ -54,6 +54,8 @@ main() {
 	assert_contains Dockerfile 'ARG AIDEVOPS_VERSION=3.39.55' || return 1
 	assert_contains Dockerfile "releases/download/v\${OPENCODE_VERSION}/opencode-linux-x64.tar.gz" || return 1
 	assert_contains Dockerfile "npm install -g \"aidevops@\${AIDEVOPS_VERSION}\"" || return 1
+	assert_contains Dockerfile "npm install -g \"aidevops@\${AIDEVOPS_VERSION}\" --allow-scripts=aidevops" || return 1
+	assert_precedes Dockerfile 'npm install -g npm@11.21.1' "npm install -g \"aidevops@\${AIDEVOPS_VERSION}\"" || return 1
 	if grep -Eq '/releases/latest([/?#]|$)' "${ROOT_DIR}/Dockerfile"; then
 		fail "Dockerfile contains a moving latest release download" || return 1
 	fi
