@@ -1,5 +1,7 @@
 [0.1.39]
 * Update the bundled aidevops CLI to 3.39.67.
+* Fix the image build by installing aidevops with npm 11.21.1 (npm 10 crashed during install).
+* Includes the unpublished 0.1.36 to 0.1.38 changes, including the Cloudron base image 6.0.1.
 
 [0.1.38]
 * Update the bundled aidevops CLI to 3.39.55.

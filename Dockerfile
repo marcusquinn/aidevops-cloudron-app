@@ -37,11 +37,15 @@ RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
 ARG OPENCODE_VERSION=1.18.4
 ARG AIDEVOPS_VERSION=3.39.67
 
+# npm 10.x Arborist crashes resolving aidevops's transitive peer dependencies.
+# Pin the verified Node 20-compatible resolver; keep aidevops's postinstall enabled.
+RUN npm install -g npm@11.21.1 && npm --version
+
 RUN curl -fsSL "https://github.com/anomalyco/opencode/releases/download/v${OPENCODE_VERSION}/opencode-linux-x64.tar.gz" \
     | tar -xz -C /usr/local/bin \
     && chmod +x /usr/local/bin/opencode \
     && opencode --version \
-    && npm install -g "aidevops@${AIDEVOPS_VERSION}"
+    && npm install -g "aidevops@${AIDEVOPS_VERSION}" --allow-scripts=aidevops
 
 # ============================================
 # Writable home directories (Cloudron read-only /app/code workaround)

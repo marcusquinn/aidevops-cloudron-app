@@ -12,6 +12,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Updated and pinned the bundled aidevops CLI to `3.39.67`.
+- First published catalog version since 0.1.35: includes the unpublished 0.1.36–0.1.38 changes, including the Cloudron base image `6.0.1`.
+
+### Fixed
+
+- Pinned npm to `11.21.1` before installing aidevops to avoid the npm 10.x Arborist `edgesOut` crash during Docker qualification, preserving the aidevops postinstall script.
 
 ## [0.1.38] - 2026-10-22
 
