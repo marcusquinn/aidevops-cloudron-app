@@ -1240,6 +1240,46 @@
             "creationDate": "Sat, 10 Oct 2026 03:46:39 GMT",
             "ts": "Sat, 10 Oct 2026 03:46:39 GMT",
             "publishState": "published"
+        },
+        "0.1.39": {
+            "manifest": {
+                "id": "sh.aidevops.worker",
+                "title": "AI DevOps Worker",
+                "author": "Marcus Quinn <marcus@marcusquinn.com>",
+                "description": "Always-on remote worker node for AI DevOps. Runs headless OpenCode sessions, accepts task dispatches via HTTP API, and integrates with the aidevops supervisor pulse for autonomous code generation, PR creation, and multi-node orchestration.",
+                "tagline": "Remote AI worker node for autonomous code generation",
+                "version": "0.1.39",
+                "upstreamVersion": "3.39.67",
+                "healthCheckPath": "/health",
+                "httpPort": 3000,
+                "manifestVersion": 2,
+                "website": "https://aidevops.sh",
+                "contactEmail": "marcus@marcusquinn.com",
+                "icon": "file://logo.png",
+                "documentationUrl": "https://github.com/marcusquinn/aidevops-cloudron-app",
+                "minBoxVersion": "9.1.0",
+                "memoryLimit": 2147483648,
+                "addons": {
+                    "localstorage": {}
+                },
+                "tcpPorts": {},
+                "iconUrl": "https://raw.githubusercontent.com/marcusquinn/aidevops-cloudron-app/main/logo.png",
+                "packagerName": "Marcus Quinn",
+                "packagerUrl": "https://github.com/marcusquinn",
+                "mediaLinks": [
+                    "https://aidevops.sh/og-image.png?v=3"
+                ],
+                "tags": [
+                    "ai",
+                    "automation",
+                    "developer-tools"
+                ],
+                "changelog": "* Update the bundled aidevops CLI to 3.39.67.\n* Fix the image build by installing aidevops with npm 11.21.1 (npm 10 crashed during install).\n* Includes the unpublished 0.1.36 to 0.1.38 changes, including the Cloudron base image 6.0.1.\n",
+                "dockerImage": "ghcr.io/marcusquinn/aidevops-cloudron-worker@sha256:7b986046a0e7dce13ccf7c8a565016fca3d107f026adc6fc2adbcdb2a50613fd"
+            },
+            "creationDate": "Sun, 25 Oct 2026 22:01:48 GMT",
+            "ts": "Sun, 25 Oct 2026 22:01:48 GMT",
+            "publishState": "published"
         }
     }
 }
