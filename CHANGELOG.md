@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Migrated catalog publication to the pinned aidevops reusable workflow, retaining package checks and CLI pins while adding PR image validation and safe publication retries.
+
 ## [0.1.39] - 2026-10-25
 
 ### Changed
