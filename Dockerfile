@@ -35,7 +35,7 @@ RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
 # OpenCode CLI (from GitHub releases) + aidevops CLI (from npm)
 # ============================================
 ARG OPENCODE_VERSION=1.18.4
-ARG AIDEVOPS_VERSION=3.39.67
+ARG AIDEVOPS_VERSION=3.39.72
 
 # npm 10.x Arborist crashes resolving aidevops's transitive peer dependencies.
 # Pin the verified Node 20-compatible resolver; keep aidevops's postinstall enabled.
