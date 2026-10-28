@@ -1,3 +1,6 @@
+[0.1.40]
+* Update the bundled aidevops CLI to 3.39.78.
+
 [0.1.39]
 * Update the bundled aidevops CLI to 3.39.67.
 * Fix the image build by installing aidevops with npm 11.21.1 (npm 10 crashed during install).
