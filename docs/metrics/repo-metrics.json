@@ -1,7 +1,7 @@
 {
   "schema": "aidevops.repo-metrics.v1",
   "schema_version": 1,
-  "generated_at": "2026-10-25T10:50:05Z",
+  "generated_at": "2026-10-30T01:10:45Z",
   "tool": {
     "name": "aidevops repo-metrics",
     "version": "1.0.0"
@@ -12,9 +12,9 @@
   },
   "summary": {
     "source_files": 26,
-    "code": 3602,
-    "comments": 204,
-    "blanks": 618,
+    "code": 3350,
+    "comments": 205,
+    "blanks": 591,
     "languages": 6,
     "dependencies": 0
   },
@@ -22,28 +22,28 @@
     {
       "name": "JSON",
       "files": 2,
-      "code": 1279,
+      "code": 1319,
       "comments": 0,
       "blanks": 0,
-      "percentage": 35.51,
+      "percentage": 39.37,
       "color": "#292929"
     },
     {
       "name": "Markdown",
       "files": 13,
-      "code": 962,
+      "code": 969,
       "comments": 0,
-      "blanks": 422,
-      "percentage": 26.71,
+      "blanks": 427,
+      "percentage": 28.93,
       "color": "#083fa1"
     },
     {
       "name": "Shell",
       "files": 4,
-      "code": 508,
-      "comments": 72,
+      "code": 488,
+      "comments": 74,
       "blanks": 67,
-      "percentage": 14.1,
+      "percentage": 14.57,
       "color": "#89e051"
     },
     {
@@ -52,25 +52,25 @@
       "code": 437,
       "comments": 61,
       "blanks": 70,
-      "percentage": 12.13,
+      "percentage": 13.04,
       "color": "#f1e05a"
     },
     {
       "name": "YAML",
       "files": 5,
-      "code": 380,
-      "comments": 50,
-      "blanks": 47,
-      "percentage": 10.55,
+      "code": 100,
+      "comments": 47,
+      "blanks": 14,
+      "percentage": 2.99,
       "color": "#cb171e"
     },
     {
       "name": "Dockerfile",
       "files": 1,
-      "code": 36,
-      "comments": 21,
-      "blanks": 12,
-      "percentage": 1.0,
+      "code": 37,
+      "comments": 23,
+      "blanks": 13,
+      "percentage": 1.1,
       "color": "#384d54"
     }
   ],
