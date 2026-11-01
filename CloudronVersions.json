@@ -1360,6 +1360,47 @@
             "creationDate": "Sun, 01 Nov 2026 22:25:19 GMT",
             "ts": "Sun, 01 Nov 2026 22:25:19 GMT",
             "publishState": "published"
+        },
+        "0.1.42": {
+            "manifest": {
+                "id": "sh.aidevops.worker",
+                "title": "AI DevOps Worker",
+                "author": "Marcus Quinn <marcus@marcusquinn.com>",
+                "description": "Always-on remote worker node for AI DevOps. Runs headless OpenCode sessions, accepts task dispatches via HTTP API, and integrates with the aidevops supervisor pulse for autonomous code generation, PR creation, and multi-node orchestration.",
+                "tagline": "Remote AI worker node for autonomous code generation",
+                "version": "0.1.42",
+                "upstreamVersion": "3.39.87",
+                "healthCheckPath": "/health",
+                "httpPort": 3000,
+                "manifestVersion": 2,
+                "website": "https://aidevops.sh",
+                "contactEmail": "marcus@marcusquinn.com",
+                "icon": "file://logo.png",
+                "documentationUrl": "https://github.com/marcusquinn/aidevops-cloudron-app",
+                "minBoxVersion": "10.0.0",
+                "memoryLimit": 2147483648,
+                "addons": {
+                    "localstorage": {}
+                },
+                "tcpPorts": {},
+                "iconUrl": "https://raw.githubusercontent.com/marcusquinn/aidevops-cloudron-app/main/logo.png",
+                "packagerName": "Marcus Quinn",
+                "packagerUrl": "https://github.com/marcusquinn",
+                "packageUrl": "https://github.com/marcusquinn/aidevops-cloudron-app",
+                "mediaLinks": [
+                    "https://aidevops.sh/og-image.png?v=3"
+                ],
+                "tags": [
+                    "ai",
+                    "automation",
+                    "developer-tools"
+                ],
+                "changelog": "* The Community Apps Package link now opens the package repository.\n* Requires Cloudron 10.0.0 or later. Cloudron 9.x can no longer read this version catalog.\n",
+                "dockerImage": "ghcr.io/marcusquinn/aidevops-cloudron-worker@sha256:b8fd456e78ffd3b6805c80159344325e3cc57b1bfb91ba9a82a3dc96e418439f"
+            },
+            "creationDate": "Sun, 01 Nov 2026 23:18:39 GMT",
+            "ts": "Sun, 01 Nov 2026 23:18:39 GMT",
+            "publishState": "published"
         }
     }
 }
