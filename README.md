@@ -42,7 +42,7 @@ Both local and remote workers push directly to GitHub. The supervisor discovers 
 
 ## Prerequisites
 
-- A [Cloudron](https://cloudron.io) server (v7.4.0+)
+- A [Cloudron](https://cloudron.io) server (v10.0.0+)
 - The `cloudron` CLI installed locally: `npm install -g cloudron`
 - An [Anthropic API key](https://console.anthropic.com/) for Claude
 - A [GitHub personal access token](https://github.com/settings/tokens) with `repo` scope

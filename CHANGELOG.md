@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.42] - 2026-11-01
+
+### Changed
+
+- Added `packageUrl` so the Community Apps Package link opens the package repository. `packagerUrl` still points to the maintainer.
+- Raised `minBoxVersion` to `10.0.0`. Cloudron 9.x rejects `packageUrl` anywhere in `CloudronVersions.json`, so this release drops Cloudron 9.x support for the whole catalog (#66). Existing catalog entries are unchanged.
+
 ## [0.1.41] - 2026-10-30
 
 ### Changed

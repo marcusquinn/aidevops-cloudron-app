@@ -33,17 +33,17 @@ assert_precedes() {
 }
 
 main() {
-	jq -e '.manifestVersion == 2 and .version == "0.1.41" and .upstreamVersion == "3.39.87" and .minBoxVersion == "9.1.0" and .iconUrl != "" and .packagerName != "" and .packagerUrl == "https://github.com/marcusquinn" and (has("packageUrl") | not) and (.mediaLinks | length) > 0 and .changelog == "file://CHANGELOG"' \
+	jq -e '.manifestVersion == 2 and .version == "0.1.42" and .upstreamVersion == "3.39.87" and .minBoxVersion == "10.0.0" and .iconUrl != "" and .packagerName != "" and .packagerUrl == "https://github.com/marcusquinn" and .packageUrl == "https://github.com/marcusquinn/aidevops-cloudron-app" and (.mediaLinks | length) > 0 and .changelog == "file://CHANGELOG"' \
 		"${ROOT_DIR}/CloudronManifest.json" >/dev/null || fail "Manifest version contract failed" || return 1
 	[[ -f "${ROOT_DIR}/CloudronVersions.json" ]] || fail "CloudronVersions.json is missing" || return 1
 	[[ -f "${ROOT_DIR}/PUBLISHING.md" ]] || fail "PUBLISHING.md is missing" || return 1
 	[[ -f "${ROOT_DIR}/media/hero.png" ]] || fail "media/hero.png is missing" || return 1
 	jq -e '.stable == true and (.versions | type == "object")' "${ROOT_DIR}/CloudronVersions.json" >/dev/null || fail "Version catalog contract failed" || return 1
-	jq -e '[.versions[].manifest | has("packageUrl")] | all(. == false)' "${ROOT_DIR}/CloudronVersions.json" >/dev/null || fail "Historical catalog entries must not use Cloudron-10-only packageUrl" || return 1
-	assert_contains CHANGELOG '[0.1.41]' || return 1
-	assert_contains CHANGELOG '* Update the bundled aidevops CLI to 3.39.87.' || return 1
-	assert_contains CHANGELOG.md '## [0.1.41]' || return 1
-	assert_contains CHANGELOG.md "- Updated and pinned the bundled aidevops CLI to \`3.39.87\`." || return 1
+	jq -e '[.versions[].manifest | select(has("packageUrl")) | (.minBoxVersion | split(".") | .[0] | tonumber) >= 10] | all' "${ROOT_DIR}/CloudronVersions.json" >/dev/null || fail "Catalog entries with packageUrl must require Cloudron 10.0.0 or later" || return 1
+	assert_contains CHANGELOG '[0.1.42]' || return 1
+	assert_contains CHANGELOG '* The Community Apps Package link now opens the package repository.' || return 1
+	assert_contains CHANGELOG.md '## [0.1.42]' || return 1
+	assert_contains CHANGELOG.md "- Added \`packageUrl\` so the Community Apps Package link opens the package repository." || return 1
 	assert_contains PUBLISHING.md 'is standing authorization for the managed publication' || return 1
 	assert_contains PUBLISHING.md 'ghcr.io/marcusquinn/aidevops-cloudron-worker' || return 1
 	jq -e '.versions["0.1.3"].publishState == "published"' "${ROOT_DIR}/CloudronVersions.json" >/dev/null || fail "Published catalog state contract failed" || return 1
