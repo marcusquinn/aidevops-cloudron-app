@@ -1,3 +1,7 @@
+[0.1.42]
+* The Community Apps Package link now opens the package repository.
+* Requires Cloudron 10.0.0 or later. Cloudron 9.x can no longer read this version catalog.
+
 [0.1.41]
 * Update the bundled aidevops CLI to 3.39.87.
 
