@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.43] - 2026-11-02
+
+### Changed
+
+- Set `packagerUrl` to this repository so the Community Apps Package link opens it.
+  ca.cloudron.io builds the Package link (and the "By" link) from `packagerUrl`
+  and ignores `packageUrl`, so the 0.1.42 change had no visible effect
+  (marcusquinn/aidevops#36428). `packageUrl` and `minBoxVersion` 10.0.0 are unchanged.
+- The bundled aidevops CLI stays at 3.39.87.
+
 ## [0.1.42] - 2026-11-01
 
 ### Changed
