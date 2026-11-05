@@ -13,6 +13,9 @@ updates:
     reviewers:
       - "marcusquinn"
     open-pull-requests-limit: 5
+    # aidevops pins move with aidevops_ref via `aidevops sync-workflows`.
+    ignore:
+      - dependency-name: "marcusquinn/aidevops*"
   - package-ecosystem: "docker"
     directory: "/"
     schedule:
