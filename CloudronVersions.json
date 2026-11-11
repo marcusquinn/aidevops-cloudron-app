@@ -1483,6 +1483,47 @@
             "creationDate": "Wed, 11 Nov 2026 04:28:31 GMT",
             "ts": "Wed, 11 Nov 2026 04:28:31 GMT",
             "publishState": "published"
+        },
+        "0.1.45": {
+            "manifest": {
+                "id": "sh.aidevops.worker",
+                "title": "AI DevOps Worker",
+                "author": "Marcus Quinn <marcus@marcusquinn.com>",
+                "description": "Always-on remote worker node for AI DevOps. Runs headless OpenCode sessions, accepts task dispatches via HTTP API, and integrates with the aidevops supervisor pulse for autonomous code generation, PR creation, and multi-node orchestration.",
+                "tagline": "Remote AI worker node for autonomous code generation",
+                "version": "0.1.45",
+                "upstreamVersion": "3.39.166",
+                "healthCheckPath": "/health",
+                "httpPort": 3000,
+                "manifestVersion": 2,
+                "website": "https://aidevops.sh",
+                "contactEmail": "marcus@marcusquinn.com",
+                "icon": "file://logo.png",
+                "documentationUrl": "https://github.com/marcusquinn/aidevops-cloudron-app",
+                "minBoxVersion": "10.0.0",
+                "memoryLimit": 2147483648,
+                "addons": {
+                    "localstorage": {}
+                },
+                "tcpPorts": {},
+                "iconUrl": "https://raw.githubusercontent.com/marcusquinn/aidevops-cloudron-app/main/logo.png",
+                "packagerName": "Marcus Quinn",
+                "packagerUrl": "https://github.com/marcusquinn/aidevops-cloudron-app",
+                "packageUrl": "https://github.com/marcusquinn/aidevops-cloudron-app",
+                "mediaLinks": [
+                    "https://aidevops.sh/og-image.png?v=3"
+                ],
+                "tags": [
+                    "ai",
+                    "automation",
+                    "developer-tools"
+                ],
+                "changelog": "* Update the bundled aidevops CLI to 3.39.166.\n",
+                "dockerImage": "ghcr.io/marcusquinn/aidevops-cloudron-worker@sha256:a56afe0fedc67051bb385dde5bfdabfdc8e60b3aa885aba2f81a722bfb724226"
+            },
+            "creationDate": "Wed, 11 Nov 2026 06:30:05 GMT",
+            "ts": "Wed, 11 Nov 2026 06:30:05 GMT",
+            "publishState": "published"
         }
     }
 }
