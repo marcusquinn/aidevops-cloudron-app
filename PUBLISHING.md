@@ -25,6 +25,12 @@ tag or digest into the catalog.
    do not qualify that installation. Record the source commit and build result;
    a failed installation blocks release qualification. This command does not
    push an image, publish a catalog, or install an app on a Cloudron server.
+
+   CI performs this same build for every PR head: the `catalog / preflight`
+   job's "Verify PR image builds without publication credentials" step runs
+   `docker buildx build --platform linux/amd64 --push=false .` with default
+   arguments and no push. Its success is the recorded build result for that
+   source commit. The local command above is the manual equivalent.
 3. Merge the completed package update to `main`. The
    `cloudron-catalog-publish.yml` workflow validates the package, builds the
    amd64 image, pushes it to
