@@ -33,16 +33,18 @@ assert_precedes() {
 }
 
 main() {
-	jq -e '.manifestVersion == 2 and .version == "0.1.43" and .upstreamVersion == "3.39.87" and .minBoxVersion == "10.0.0" and .iconUrl != "" and .packagerName != "" and .packagerUrl == "https://github.com/marcusquinn/aidevops-cloudron-app" and .packageUrl == "https://github.com/marcusquinn/aidevops-cloudron-app" and (.mediaLinks | length) > 0 and .changelog == "file://CHANGELOG"' \
+	jq -e '.manifestVersion == 2 and .version == "0.1.44" and .upstreamVersion == "3.39.114" and .minBoxVersion == "10.0.0" and .iconUrl != "" and .packagerName != "" and .packagerUrl == "https://github.com/marcusquinn/aidevops-cloudron-app" and .packageUrl == "https://github.com/marcusquinn/aidevops-cloudron-app" and (.mediaLinks | length) > 0 and .changelog == "file://CHANGELOG"' \
 		"${ROOT_DIR}/CloudronManifest.json" >/dev/null || fail "Manifest version contract failed" || return 1
 	[[ -f "${ROOT_DIR}/CloudronVersions.json" ]] || fail "CloudronVersions.json is missing" || return 1
 	[[ -f "${ROOT_DIR}/PUBLISHING.md" ]] || fail "PUBLISHING.md is missing" || return 1
 	[[ -f "${ROOT_DIR}/media/hero.png" ]] || fail "media/hero.png is missing" || return 1
 	jq -e '.stable == true and (.versions | type == "object")' "${ROOT_DIR}/CloudronVersions.json" >/dev/null || fail "Version catalog contract failed" || return 1
 	jq -e '[.versions[].manifest | select(has("packageUrl")) | (.minBoxVersion | split(".") | .[0] | tonumber) >= 10] | all' "${ROOT_DIR}/CloudronVersions.json" >/dev/null || fail "Catalog entries with packageUrl must require Cloudron 10.0.0 or later" || return 1
-	assert_contains CHANGELOG '[0.1.43]' || return 1
+	assert_contains CHANGELOG '[0.1.44]' || return 1
+	assert_contains CHANGELOG '* Update the bundled aidevops CLI to 3.39.114.' || return 1
 	assert_contains CHANGELOG '* The Community Apps Package link now opens this repository.' || return 1
-	assert_contains CHANGELOG.md '## [0.1.43]' || return 1
+	assert_contains CHANGELOG.md '## [0.1.44]' || return 1
+	assert_contains CHANGELOG.md "- Updated and pinned the bundled aidevops CLI to \`3.39.114\`." || return 1
 	assert_contains CHANGELOG.md "- Set \`packagerUrl\` to this repository so the Community Apps Package link opens it." || return 1
 	assert_contains PUBLISHING.md 'is standing authorization for the managed publication' || return 1
 	assert_contains PUBLISHING.md 'ghcr.io/marcusquinn/aidevops-cloudron-worker' || return 1
@@ -51,7 +53,7 @@ main() {
 	assert_contains Dockerfile 'LABEL org.opencontainers.image.source="https://github.com/marcusquinn/aidevops-cloudron-app"' || return 1
 	assert_contains Dockerfile '    ripgrep' || return 1
 	assert_contains Dockerfile 'ARG OPENCODE_VERSION=1.18.4' || return 1
-	assert_contains Dockerfile 'ARG AIDEVOPS_VERSION=3.39.87' || return 1
+	assert_contains Dockerfile 'ARG AIDEVOPS_VERSION=3.39.114' || return 1
 	assert_contains Dockerfile "releases/download/v\${OPENCODE_VERSION}/opencode-linux-x64.tar.gz" || return 1
 	assert_contains Dockerfile "npm install -g \"aidevops@\${AIDEVOPS_VERSION}\"" || return 1
 	assert_contains Dockerfile "npm install -g \"aidevops@\${AIDEVOPS_VERSION}\" --allow-scripts=aidevops" || return 1
