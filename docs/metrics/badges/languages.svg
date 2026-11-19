@@ -3,22 +3,22 @@
   <style>.bg{fill:#ffffff}.track{fill:#eaecef}.lbl{fill:#24292f}.pct{fill:#57606a}@media (prefers-color-scheme: dark){.bg{fill:#0d1117}.track{fill:#30363d}.lbl{fill:#e6edf3}.pct{fill:#8b949e}}</style>
   <rect class="bg" width="520" height="96"/>
   <rect class="track" x="20" y="10" width="480" height="14" rx="3"/>
-  <rect x="20" y="10" width="219" height="14" fill="#292929"/>
-  <rect x="239" y="10" width="125" height="14" fill="#083fa1"/>
-  <rect x="364" y="10" width="60" height="14" fill="#89e051"/>
-  <rect x="424" y="10" width="54" height="14" fill="#f1e05a"/>
-  <rect x="478" y="10" width="14" height="14" fill="#cb171e"/>
-  <rect x="492" y="10" width="8" height="14" fill="#384d54"/>
+  <rect x="20" y="10" width="224" height="14" fill="#292929"/>
+  <rect x="244" y="10" width="123" height="14" fill="#083fa1"/>
+  <rect x="367" y="10" width="59" height="14" fill="#89e051"/>
+  <rect x="426" y="10" width="53" height="14" fill="#f1e05a"/>
+  <rect x="479" y="10" width="14" height="14" fill="#cb171e"/>
+  <rect x="493" y="10" width="7" height="14" fill="#384d54"/>
   <rect x="20" y="34" width="10" height="10" rx="2" fill="#292929"/>
-  <text x="34" y="44" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-size="11" class="lbl">JSON <tspan class="pct">45.8%</tspan></text>
+  <text x="34" y="44" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-size="11" class="lbl">JSON <tspan class="pct">46.9%</tspan></text>
   <rect x="270" y="34" width="10" height="10" rx="2" fill="#083fa1"/>
-  <text x="284" y="44" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-size="11" class="lbl">Markdown <tspan class="pct">26.2%</tspan></text>
+  <text x="284" y="44" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-size="11" class="lbl">Markdown <tspan class="pct">25.8%</tspan></text>
   <rect x="20" y="50" width="10" height="10" rx="2" fill="#89e051"/>
-  <text x="34" y="60" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-size="11" class="lbl">Shell <tspan class="pct">12.7%</tspan></text>
+  <text x="34" y="60" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-size="11" class="lbl">Shell <tspan class="pct">12.4%</tspan></text>
   <rect x="270" y="50" width="10" height="10" rx="2" fill="#f1e05a"/>
-  <text x="284" y="60" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-size="11" class="lbl">JavaScript <tspan class="pct">11.3%</tspan></text>
+  <text x="284" y="60" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-size="11" class="lbl">JavaScript <tspan class="pct">11.1%</tspan></text>
   <rect x="20" y="66" width="10" height="10" rx="2" fill="#cb171e"/>
-  <text x="34" y="76" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-size="11" class="lbl">YAML <tspan class="pct">3.0%</tspan></text>
+  <text x="34" y="76" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-size="11" class="lbl">YAML <tspan class="pct">2.9%</tspan></text>
   <rect x="270" y="66" width="10" height="10" rx="2" fill="#384d54"/>
-  <text x="284" y="76" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-size="11" class="lbl">Dockerfile <tspan class="pct">1.0%</tspan></text>
+  <text x="284" y="76" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-size="11" class="lbl">Dockerfile <tspan class="pct">0.9%</tspan></text>
 </svg>
